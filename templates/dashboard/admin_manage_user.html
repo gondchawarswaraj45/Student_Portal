@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage User - EduPortal{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <div class="dashboard-welcome">
+                <h1><i class="fas fa-user-cog"></i> Manage User</h1>
+                <p>Viewing details for <strong>{{ managed_user.username }}</strong></p>
+            </div>
+            <div class="dashboard-actions">
+                <a href="{% url 'dashboard:admin_dashboard' %}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-arrow-left"></i> Back to Admin
+                </a>
+            </div>
+        </div>
+
+        <div class="dashboard-grid">
+            <!-- User Info -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-user"></i> User Information</h2>
+                </div>
+                <div class="card-body">
+                    <div class="profile-summary" style="margin-bottom: 24px;">
+                        <div class="summary-avatar ratio-{{ profile.avatar_ratio|default:'auto' }} position-{{ profile.avatar_position|default:'center' }}">
+                            {% if profile.profile_picture %}
+                                <img src="{{ profile.profile_picture.url }}" alt="Profile" style="max-width: 150px;">
+                            {% else %}
+                                <div class="avatar-placeholder small" style="width: 100px; height: 100px; font-size: 2rem; margin: 0 auto;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="detail-list">
+                        <div class="detail-item">
+                            <span class="detail-label">Username</span>
+                            <span class="detail-value">{{ managed_user.username }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Full Name</span>
+                            <span class="detail-value">{{ managed_user.get_full_name|default:"Not Set" }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Email</span>
+                            <span class="detail-value">{{ managed_user.email }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Role</span>
+                            <span class="detail-value">
+                                <span class="user-role-badge role-{{ managed_user.role }}">
+                                    {{ managed_user.get_role_display }}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Status</span>
+                            <span class="detail-value">
+                                {% if managed_user.is_active %}
+                                    <span class="badge badge-success">Active</span>
+                                {% else %}
+                                    <span class="badge badge-danger">Inactive</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Email Verified</span>
+                            <span class="detail-value">
+                                {% if managed_user.is_email_verified %}
+                                    <span class="badge badge-success">Yes</span>
+                                {% else %}
+                                    <span class="badge badge-warning">No</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Date Joined</span>
+                            <span class="detail-value">{{ managed_user.date_joined|date:"F d, Y H:i" }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Last Login</span>
+                            <span class="detail-value">{{ managed_user.last_login|date:"F d, Y H:i"|default:"Never" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions & Student Details -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-cogs"></i> Actions</h2>
+                </div>
+                <div class="card-body">
+                    <div class="admin-actions-list">
+                        <a href="{% url 'dashboard:admin_edit_user' managed_user.pk %}"
+                           class="btn btn-primary btn-block">
+                            <i class="fas fa-edit"></i> Edit User Info
+                        </a>
+
+                        <a href="{% url 'dashboard:admin_toggle_active' managed_user.pk %}"
+                           class="btn btn-{% if managed_user.is_active %}warning{% else %}success{% endif %} btn-block">
+                            <i class="fas fa-{% if managed_user.is_active %}ban{% else %}check{% endif %}"></i>
+                            {% if managed_user.is_active %}Deactivate{% else %}Activate{% endif %} User
+                        </a>
+
+                        {% if managed_user != request.user %}
+                        <a href="{% url 'dashboard:admin_delete_user' managed_user.pk %}"
+                           class="btn btn-danger btn-block"
+                           onclick="return confirm('Are you sure you want to permanently delete this user?')">
+                            <i class="fas fa-trash"></i> Delete User
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    {% if student_detail %}
+                    <hr class="divider">
+                    <h3 class="sub-heading"><i class="fas fa-graduation-cap"></i> Student Details</h3>
+                    <div class="detail-list">
+                        <div class="detail-item">
+                            <span class="detail-label">Roll Number</span>
+                            <span class="detail-value">{{ student_detail.roll_number }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Department</span>
+                            <span class="detail-value">{{ student_detail.department }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Year</span>
+                            <span class="detail-value">{{ student_detail.get_year_display }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Semester</span>
+                            <span class="detail-value">{{ student_detail.get_semester_display }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

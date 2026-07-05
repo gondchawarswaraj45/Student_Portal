@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit User - Admin Panel{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <div class="dashboard-welcome">
+                <h1><i class="fas fa-user-edit"></i> Edit User</h1>
+                <p>Editing details for <strong>{{ managed_user.username }}</strong></p>
+            </div>
+            <div class="dashboard-actions">
+                <a href="{% url 'dashboard:admin_manage_user' managed_user.pk %}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-arrow-left"></i> Back to User
+                </a>
+            </div>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="dashboard-grid">
+                <!-- User Information -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-user"></i> User Information</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">First Name</label>
+                                {{ user_form.first_name }}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Last Name</label>
+                                {{ user_form.last_name }}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            {{ user_form.email }}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Role</label>
+                            {{ user_form.role }}
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    {{ user_form.is_active }}
+                                    <span>Active Account</span>
+                                </label>
+                            </div>
+                            <div class="form-group checkbox-group">
+                                <label class="checkbox-label">
+                                    {{ user_form.is_email_verified }}
+                                    <span>Email Verified</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Information -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-id-card"></i> Profile Information</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label class="form-label">Bio</label>
+                            {{ profile_form.bio }}
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Phone</label>
+                                {{ profile_form.phone }}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Date of Birth</label>
+                                {{ profile_form.date_of_birth }}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Address</label>
+                            {{ profile_form.address }}
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Profile Picture</label>
+                            {{ profile_form.profile_picture }}
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Picture Aspect Ratio</label>
+                                {{ profile_form.avatar_ratio }}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Picture Position / Crop Focus</label>
+                                {{ profile_form.avatar_position }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student Details (if student) -->
+                {% if student_form %}
+                <div class="dashboard-card full-width">
+                    <div class="card-header">
+                        <h2><i class="fas fa-graduation-cap"></i> Student Academic Details</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Roll Number</label>
+                                {{ student_form.roll_number }}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Department</label>
+                                {{ student_form.department }}
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Year</label>
+                                {{ student_form.year }}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Semester</label>
+                                {{ student_form.semester }}
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Admission Date</label>
+                                {{ student_form.admission_date }}
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Guardian Name</label>
+                                {{ student_form.guardian_name }}
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Guardian Phone</label>
+                            {{ student_form.guardian_phone }}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="form-submit-bar">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+                <a href="{% url 'dashboard:admin_manage_user' managed_user.pk %}" class="btn btn-outline">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

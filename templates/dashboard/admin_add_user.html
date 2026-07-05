@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block title %}Add User - Admin Panel{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <div class="dashboard-welcome">
+                <h1><i class="fas fa-user-plus"></i> Add New User</h1>
+                <p>Create a new student or teacher account</p>
+            </div>
+            <div class="dashboard-actions">
+                <a href="{% url 'dashboard:admin_dashboard' %}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-arrow-left"></i> Back to Admin
+                </a>
+            </div>
+        </div>
+
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2><i class="fas fa-user-plus"></i> New User Details</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="dashboard-form">
+                    {% csrf_token %}
+
+                    <!-- Role Selection -->
+                    <div class="form-group role-selection">
+                        <label class="form-label">User Role:</label>
+                        <div class="role-toggle">
+                            {% for radio in form.role %}
+                            <label class="role-option">
+                                {{ radio.tag }}
+                                <span class="role-label">
+                                    {% if radio.choice_label == 'Student' %}
+                                        <i class="fas fa-user-graduate"></i>
+                                    {% else %}
+                                        <i class="fas fa-chalkboard-teacher"></i>
+                                    {% endif %}
+                                    {{ radio.choice_label }}
+                                </span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">First Name</label>
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                            <span class="form-error">{{ form.first_name.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Last Name</label>
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                            <span class="form-error">{{ form.last_name.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                        <span class="form-error">{{ form.username.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Email</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                        <span class="form-error">{{ form.email.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}
+                            <span class="form-error">{{ form.password1.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirm Password</label>
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}
+                            <span class="form-error">{{ form.password2.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i> Create User
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

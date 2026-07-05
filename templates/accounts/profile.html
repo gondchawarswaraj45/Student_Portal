@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - EduPortal{% endblock %}
+
+{% block content %}
+<section class="profile-section">
+    <div class="profile-container">
+        <div class="profile-header-card">
+            <div class="profile-avatar summary-avatar ratio-{{ user.profile.avatar_ratio|default:'auto' }} position-{{ user.profile.avatar_position|default:'center' }}">
+                {% if user.profile.profile_picture %}
+                    <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture">
+                {% else %}
+                    <div class="avatar-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="profile-info">
+                <h1>{{ user.get_full_name|default:user.username }}</h1>
+                <span class="user-role-badge role-{{ user.role }}">
+                    {% if user.role == 'student' %}
+                        <i class="fas fa-user-graduate"></i>
+                    {% elif user.role == 'teacher' %}
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    {% else %}
+                        <i class="fas fa-user-shield"></i>
+                    {% endif %}
+                    {{ user.get_role_display }}
+                </span>
+                <p class="profile-email"><i class="fas fa-envelope"></i> {{ user.email }}</p>
+                <p class="profile-joined"><i class="fas fa-calendar"></i> Joined {{ user.date_joined|date:"F d, Y" }}</p>
+            </div>
+        </div>
+
+        <div class="profile-forms-grid">
+            <form method="POST" enctype="multipart/form-data" class="profile-form-card">
+                {% csrf_token %}
+
+                <h2><i class="fas fa-user-edit"></i> Personal Information</h2>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">First Name</label>
+                        {{ user_form.first_name }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        {{ user_form.last_name }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    {{ user_form.email }}
+                </div>
+
+                <h2><i class="fas fa-id-card"></i> Profile Details</h2>
+
+                <div class="form-group">
+                    <label class="form-label">Bio</label>
+                    {{ profile_form.bio }}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Phone</label>
+                        {{ profile_form.phone }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Date of Birth</label>
+                        {{ profile_form.date_of_birth }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Address</label>
+                    {{ profile_form.address }}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Profile Picture</label>
+                    {{ profile_form.profile_picture }}
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Picture Aspect Ratio</label>
+                        {{ profile_form.avatar_ratio }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Picture Position / Crop Focus</label>
+                        {{ profile_form.avatar_position }}
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}

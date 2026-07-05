@@ -1,0 +1,202 @@
+{% extends 'base.html' %}
+
+{% block title %}Teacher Dashboard - EduPortal{% endblock %}
+
+{% block content %}
+<section class="dashboard-section">
+    <div class="dashboard-container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="dashboard-welcome">
+                <h1><i class="fas fa-chalkboard-teacher"></i> Teacher Dashboard</h1>
+                <p>Welcome back, <strong>{{ user.first_name|default:user.username }}</strong>!</p>
+            </div>
+            <div class="dashboard-actions">
+                <a href="{% url 'accounts:profile' %}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-user-edit"></i> Edit Profile
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card stat-blue">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-content">
+                    <h3>Total Students</h3>
+                    <p class="stat-value">{{ total_students }}</p>
+                </div>
+            </div>
+            <div class="stat-card stat-green">
+                <div class="stat-icon"><i class="fas fa-building"></i></div>
+                <div class="stat-content">
+                    <h3>Departments</h3>
+                    <p class="stat-value">{{ dept_stats|length }}</p>
+                </div>
+            </div>
+            <div class="stat-card stat-purple">
+                <div class="stat-icon"><i class="fas fa-chart-bar"></i></div>
+                <div class="stat-content">
+                    <h3>Year Groups</h3>
+                    <p class="stat-value">{{ year_stats|length }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="dashboard-grid">
+            <!-- Student List -->
+            <div class="dashboard-card full-width">
+                <div class="card-header">
+                    <h2><i class="fas fa-list"></i> Student List</h2>
+                    <div class="card-header-actions">
+                        <input type="text" class="form-input search-input" id="studentSearch"
+                               placeholder="Search students...">
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if students %}
+                    <div class="table-responsive">
+                        <table class="data-table" id="studentTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Roll No.</th>
+                                    <th>Department</th>
+                                    <th>Year</th>
+                                    <th>Semester</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <div class="user-cell">
+                                            <div class="user-avatar-sm">
+                                                {{ student.first_name|first|default:"S" }}
+                                            </div>
+                                            {{ student.get_full_name|default:student.username }}
+                                        </div>
+                                    </td>
+                                    <td>{{ student.email }}</td>
+                                    <td>{{ student.student_detail.roll_number|default:"-" }}</td>
+                                    <td>{{ student.student_detail.department|default:"-" }}</td>
+                                    <td>{{ student.student_detail.get_year_display|default:"-" }}</td>
+                                    <td>{{ student.student_detail.get_semester_display|default:"-" }}</td>
+                                    <td>
+                                        {% if student.is_active %}
+                                            <span class="badge badge-success">Active</span>
+                                        {% else %}
+                                            <span class="badge badge-danger">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <p>No students registered yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Department Stats -->
+            {% if dept_stats %}
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-chart-pie"></i> Department Statistics</h2>
+                </div>
+                <div class="card-body">
+                    <div class="chart-bars-horizontal">
+                        {% for dept in dept_stats %}
+                        <div class="bar-item">
+                            <div class="bar-label">{{ dept.department|default:"Unknown" }}</div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: {% widthratio dept.count total_students 100 %}%">
+                                    {{ dept.count }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Year Stats -->
+            {% if year_stats %}
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-layer-group"></i> Year Distribution</h2>
+                </div>
+                <div class="card-body">
+                    <div class="chart-bars-horizontal">
+                        {% for yr in year_stats %}
+                        <div class="bar-item">
+                            <div class="bar-label">Year {{ yr.year }}</div>
+                            <div class="bar-track">
+                                <div class="bar-fill bar-fill-alt" style="width: {% widthratio yr.count total_students 100 %}%">
+                                    {{ yr.count }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Teacher Notice Board -->
+        <div class="dashboard-grid" style="margin-top: 32px;">
+            <div class="dashboard-card full-width">
+                <div class="card-header">
+                    <h2><i class="fas fa-bullhorn" style="color: var(--accent-blue);"></i> Announcements Board</h2>
+                </div>
+                <div class="card-body">
+                    {% if announcements %}
+                        <div class="announcements-feed">
+                            {% for ann in announcements %}
+                                <div class="feed-item">
+                                    <div class="feed-header">
+                                        <h3 class="feed-title">{{ ann.title }}</h3>
+                                        <span class="feed-date">{{ ann.created_at|date:"M d, Y" }}</span>
+                                    </div>
+                                    <p class="feed-body">{{ ann.content }}</p>
+                                    <span class="feed-author">Posted by: {{ ann.posted_by.get_full_name|default:ann.posted_by.username }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-bell-slash"></i>
+                            <p>No new announcements at this time.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Student search filter
+    document.getElementById('studentSearch')?.addEventListener('input', function() {
+        const filter = this.value.toLowerCase();
+        const rows = document.querySelectorAll('#studentTable tbody tr');
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? '' : 'none';
+        });
+    });
+</script>
+{% endblock %}
