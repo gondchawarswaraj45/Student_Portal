@@ -6,221 +6,236 @@
 <section class="dashboard-section">
     <div class="dashboard-container">
         <!-- Dashboard Header -->
-        <div class="dashboard-header">
+        <div class="dashboard-header animated-slide-in">
             <div class="dashboard-welcome">
-                <h1><i class="fas fa-user-shield"></i> Admin Dashboard</h1>
-                <p>System overview and user management</p>
+                <h1><i class="fas fa-user-shield"></i> Admin Portal</h1>
+                <p>System overview, user directories, course scheduling, and bulletins</p>
             </div>
             <div class="dashboard-actions">
                 <a href="{% url 'dashboard:admin_add_user' %}" class="btn btn-primary btn-sm">
                     <i class="fas fa-user-plus"></i> Add User
                 </a>
-                <a href="/admin/" class="btn btn-outline btn-sm" target="_blank">
-                    <i class="fas fa-cog"></i> Django Admin
-                </a>
+                <button class="btn btn-outline btn-sm" data-modal-target="createCourseModal">
+                    <i class="fas fa-plus-circle"></i> Create Course
+                </button>
             </div>
         </div>
 
-        <!-- Stats Cards -->
-        <div class="stats-grid stats-grid-5">
-            <div class="stat-card stat-blue">
-                <div class="stat-icon"><i class="fas fa-users"></i></div>
-                <div class="stat-content">
-                    <h3>Total Users</h3>
-                    <p class="stat-value">{{ total_users }}</p>
-                </div>
-            </div>
-            <div class="stat-card stat-green">
-                <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
-                <div class="stat-content">
-                    <h3>Students</h3>
-                    <p class="stat-value">{{ total_students }}</p>
-                </div>
-            </div>
-            <div class="stat-card stat-purple">
-                <div class="stat-icon"><i class="fas fa-chalkboard-teacher"></i></div>
-                <div class="stat-content">
-                    <h3>Teachers</h3>
-                    <p class="stat-value">{{ total_teachers }}</p>
-                </div>
-            </div>
-            <div class="stat-card stat-orange">
-                <div class="stat-icon"><i class="fas fa-user-shield"></i></div>
-                <div class="stat-content">
-                    <h3>Admins</h3>
-                    <p class="stat-value">{{ total_admins }}</p>
-                </div>
-            </div>
-            <div class="stat-card stat-teal">
-                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
-                <div class="stat-content">
-                    <h3>Verified</h3>
-                    <p class="stat-value">{{ verified_users }}</p>
-                </div>
-            </div>
+        <!-- Dashboard Navigation Tabs -->
+        <div class="tab-controls animated-slide-in">
+            <button class="tab-btn active" data-tab-target="users-panel">
+                <i class="fas fa-users"></i> Users Directory
+            </button>
+            <button class="tab-btn" data-tab-target="notices-panel">
+                <i class="fas fa-bullhorn"></i> Notice Bulletins
+            </button>
+            <button class="tab-btn" data-tab-target="courses-panel">
+                <i class="fas fa-book"></i> Course Manager
+            </button>
         </div>
 
-        <!-- Main Content -->
-        <div class="dashboard-grid">
-            <!-- Recent Users -->
-            <div class="dashboard-card full-width">
-                <div class="card-header">
-                    <h2><i class="fas fa-clock"></i> Recent Users</h2>
-                    <div class="card-header-actions">
-                        <input type="text" class="form-input search-input" id="userSearch"
-                               placeholder="Search users...">
+        <!-- PANEL 1: USERS DIRECTORY -->
+        <div class="tab-panel active" id="users-panel">
+            <!-- Stats Cards -->
+            <div class="stats-grid stats-grid-5">
+                <div class="stat-card glass-card stat-blue">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-content">
+                        <h3>Total Users</h3>
+                        <p class="stat-value">{{ total_users }}</p>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="data-table" id="userTable">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>User</th>
-                                    <th>Email</th>
-                                    <th>Role</th>
-                                    <th>Verified</th>
-                                    <th>Joined</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for u in all_users %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>
-                                        <div class="user-cell">
-                                            <div class="user-avatar-sm">
-                                                {{ u.first_name|first|default:"U" }}
-                                            </div>
-                                            {{ u.get_full_name|default:u.username }}
-                                        </div>
-                                    </td>
-                                    <td>{{ u.email }}</td>
-                                    <td>
-                                        <span class="user-role-badge role-{{ u.role }}">
-                                            {{ u.get_role_display }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {% if u.is_email_verified %}
-                                            <span class="badge badge-success"><i class="fas fa-check"></i></span>
-                                        {% else %}
-                                            <span class="badge badge-warning"><i class="fas fa-clock"></i></span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ u.date_joined|date:"M d, Y" }}</td>
-                                    <td>
-                                        {% if u.is_active %}
-                                            <span class="badge badge-success">Active</span>
-                                        {% else %}
-                                            <span class="badge badge-danger">Inactive</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <a href="{% url 'dashboard:admin_manage_user' u.pk %}"
-                                               class="btn-icon btn-icon-blue" title="View">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            <a href="{% url 'dashboard:admin_edit_user' u.pk %}"
-                                               class="btn-icon btn-icon-green" title="Edit">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a href="{% url 'dashboard:admin_toggle_active' u.pk %}"
-                                               class="btn-icon btn-icon-{% if u.is_active %}orange{% else %}green{% endif %}"
-                                               title="{% if u.is_active %}Deactivate{% else %}Activate{% endif %}">
-                                                <i class="fas fa-{% if u.is_active %}ban{% else %}check{% endif %}"></i>
-                                            </a>
-                                            {% if u != request.user %}
-                                            <a href="{% url 'dashboard:admin_delete_user' u.pk %}"
-                                               class="btn-icon btn-icon-red" title="Delete"
-                                               onclick="return confirm('Are you sure you want to delete this user?')">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                <div class="stat-card glass-card stat-green">
+                    <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
+                    <div class="stat-content">
+                        <h3>Students</h3>
+                        <p class="stat-value">{{ total_students }}</p>
+                    </div>
+                </div>
+                <div class="stat-card glass-card stat-purple">
+                    <div class="stat-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                    <div class="stat-content">
+                        <h3>Teachers</h3>
+                        <p class="stat-value">{{ total_teachers }}</p>
+                    </div>
+                </div>
+                <div class="stat-card glass-card stat-orange">
+                    <div class="stat-icon"><i class="fas fa-user-shield"></i></div>
+                    <div class="stat-content">
+                        <h3>Admins</h3>
+                        <p class="stat-value">{{ total_admins }}</p>
+                    </div>
+                </div>
+                <div class="stat-card glass-card stat-teal">
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-content">
+                        <h3>Verified</h3>
+                        <p class="stat-value">{{ verified_users }}</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Department Stats -->
-            {% if dept_stats %}
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-chart-pie"></i> Department Distribution</h2>
-                </div>
-                <div class="card-body">
-                    <div class="chart-bars-horizontal">
-                        {% for dept in dept_stats %}
-                        <div class="bar-item">
-                            <div class="bar-label">{{ dept.department|default:"Unknown" }}</div>
-                            <div class="bar-track">
-                                <div class="bar-fill" style="width: {% widthratio dept.count total_students 100 %}%">
-                                    {{ dept.count }}
-                                </div>
-                            </div>
+            <!-- Users List Card -->
+            <div class="dashboard-grid" style="margin-top: 32px;">
+                <div class="dashboard-card glass-card full-width">
+                    <div class="card-header">
+                        <h2><i class="fas fa-list"></i> Registered Accounts</h2>
+                        <div class="card-header-actions">
+                            <input type="text" class="form-input search-input" id="userSearch" placeholder="Search accounts...">
                         </div>
-                        {% endfor %}
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="data-table" id="userTable">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>User</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Verified</th>
+                                        <th>Joined</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for u in all_users %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td>
+                                            <div class="user-cell">
+                                                <div class="user-avatar-sm">
+                                                    {{ u.first_name|first|default:"U"|upper }}
+                                                </div>
+                                                {{ u.get_full_name|default:u.username }}
+                                            </div>
+                                        </td>
+                                        <td>{{ u.email }}</td>
+                                        <td>
+                                            <span class="user-role-badge role-{{ u.role }}">
+                                                {{ u.get_role_display }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if u.is_email_verified %}
+                                                <span class="badge badge-success"><i class="fas fa-check"></i></span>
+                                            {% else %}
+                                                <span class="badge badge-warning"><i class="fas fa-clock"></i></span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ u.date_joined|date:"M d, Y" }}</td>
+                                        <td>
+                                            {% if u.is_active %}
+                                                <span class="badge badge-success">Active</span>
+                                            {% else %}
+                                                <span class="badge badge-danger">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="{% url 'dashboard:admin_manage_user' u.pk %}" class="btn-icon btn-icon-blue" title="View Details">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                <a href="{% url 'dashboard:admin_edit_user' u.pk %}" class="btn-icon btn-icon-green" title="Edit Profile">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{% url 'dashboard:admin_toggle_active' u.pk %}" class="btn-icon btn-icon-{% if u.is_active %}orange{% else %}green{% endif %}" title="{% if u.is_active %}Deactivate{% else %}Activate{% endif %}">
+                                                    <i class="fas fa-{% if u.is_active %}ban{% else %}check{% endif %}"></i>
+                                                </a>
+                                                {% if u != request.user %}
+                                                <a href="{% url 'dashboard:admin_delete_user' u.pk %}" class="btn-icon btn-icon-red" title="Delete User" onclick="return confirm('Are you sure you want to delete this user?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-            {% endif %}
-
-            <!-- Quick Actions -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
-                </div>
-                <div class="card-body">
-                    <div class="quick-actions">
-                        <a href="/admin/" class="quick-action-btn" target="_blank">
-                            <i class="fas fa-cog"></i>
-                            <span>Django Admin</span>
-                        </a>
-                        <a href="{% url 'accounts:profile' %}" class="quick-action-btn">
-                            <i class="fas fa-user-edit"></i>
-                            <span>My Profile</span>
-                        </a>
-                        <a href="{% url 'home' %}" class="quick-action-btn">
-                            <i class="fas fa-home"></i>
-                            <span>Home Page</span>
-                        </a>
-                    </div>
-                </div>
         </div>
 
-        <!-- Admin Notice Board -->
-        <div class="dashboard-grid" style="margin-top: 32px;">
-            <div class="dashboard-card full-width">
+        <!-- PANEL 2: NOTICE BULLETINS -->
+        <div class="tab-panel" id="notices-panel">
+            <div class="dashboard-card glass-card">
                 <div class="card-header">
-                    <h2><i class="fas fa-bullhorn" style="color: var(--accent-blue);"></i> Announcements Board</h2>
+                    <h2><i class="fas fa-bullhorn"></i> Global Notice Bulletins</h2>
+                    <button class="btn btn-primary btn-sm" data-modal-target="postNoticeModal">
+                        <i class="fas fa-plus"></i> Post Bulletin
+                    </button>
                 </div>
                 <div class="card-body">
                     {% if announcements %}
                         <div class="announcements-feed">
                             {% for ann in announcements %}
-                                <div class="feed-item">
+                                <div class="feed-item-premium audience-{{ ann.target_audience }}">
+                                    <button class="feed-item-delete" data-notice-id="{{ ann.id }}" title="Delete Notice">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
                                     <div class="feed-header">
                                         <h3 class="feed-title">{{ ann.title }}</h3>
                                         <span class="feed-date">{{ ann.created_at|date:"M d, Y" }}</span>
                                     </div>
                                     <p class="feed-body">{{ ann.content }}</p>
-                                    <span class="feed-author">Posted by: {{ ann.posted_by.get_full_name|default:ann.posted_by.username }}</span>
+                                    <div class="feed-footer-details" style="display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-top: 12px;">
+                                        <span>Posted by: <strong>{{ ann.posted_by.get_full_name|default:ann.posted_by.username }}</strong></span>
+                                        <span>Audience: <strong style="text-transform: capitalize;">{{ ann.get_target_audience_display }}</strong></span>
+                                    </div>
                                 </div>
                             {% endfor %}
                         </div>
                     {% else %}
                         <div class="empty-state">
                             <i class="fas fa-bell-slash"></i>
-                            <p>No announcements posted yet.</p>
+                            <p>No notices posted on the bulletin yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL 3: COURSE MANAGER -->
+        <div class="tab-panel" id="courses-panel">
+            <div class="dashboard-card glass-card">
+                <div class="card-header">
+                    <h2><i class="fas fa-book"></i> Active Course Catalog</h2>
+                    <button class="btn btn-primary btn-sm" data-modal-target="createCourseModal">
+                        <i class="fas fa-plus-circle"></i> Add New Course
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if courses %}
+                        <div class="courses-grid-directory">
+                            {% for course in courses %}
+                                <div class="glass-card course-card-premium">
+                                    <div class="course-card-header">
+                                        <span class="course-card-code">{{ course.code }}</span>
+                                        <span class="badge" style="background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); border: 1px solid var(--border-color);">
+                                            Semester {{ course.semester }}
+                                        </span>
+                                    </div>
+                                    <h3 class="course-card-title">{{ course.name }}</h3>
+                                    <p class="course-card-dept"><i class="fas fa-building"></i> {{ course.department }}</p>
+                                    <div class="course-card-actions" style="margin-top: 16px;">
+                                        <a href="{% url 'dashboard:admin_delete_course' course.id %}" 
+                                           class="btn btn-outline btn-sm" 
+                                           onclick="return confirm('Are you sure you want to delete this course? All student enrollments associated with this course will be deleted.')"
+                                           style="width: 100%; text-align: center; color: var(--accent-red); border-color: rgba(239, 68, 68, 0.3);">
+                                            <i class="fas fa-trash-alt"></i> Delete Course
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-book-open"></i>
+                            <p>No courses registered in the database catalog.</p>
                         </div>
                     {% endif %}
                 </div>
@@ -228,18 +243,96 @@
         </div>
     </div>
 </section>
+
+<!-- MODAL 1: POST NOTICE -->
+<div class="edu-modal" id="postNoticeModal">
+    <div class="edu-modal-content">
+        <div class="edu-modal-header">
+            <h3><i class="fas fa-bullhorn text-primary"></i> Post Notice Bulletin</h3>
+            <button class="edu-modal-close"><i class="fas fa-times"></i></button>
+        </div>
+        <form action="{% url 'dashboard:create_announcement' %}" method="POST">
+            {% csrf_token %}
+            <div class="edu-modal-body">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Notice Title</label>
+                    {{ announcement_form.title }}
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Message / Description</label>
+                    {{ announcement_form.content }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Target Audience</label>
+                    {{ announcement_form.target_audience }}
+                </div>
+            </div>
+            <div class="edu-modal-footer">
+                <button type="button" class="btn btn-outline btn-sm" data-modal-close>Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm">Publish Bulletin</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL 2: CREATE COURSE -->
+<div class="edu-modal" id="createCourseModal">
+    <div class="edu-modal-content">
+        <div class="edu-modal-header">
+            <h3><i class="fas fa-book text-primary"></i> Create Course Record</h3>
+            <button class="edu-modal-close"><i class="fas fa-times"></i></button>
+        </div>
+        <form action="{% url 'dashboard:admin_manage_courses' %}" method="POST">
+            {% csrf_token %}
+            <div class="edu-modal-body">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Course Code (Unique)</label>
+                    {{ course_form.code }}
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Course Name</label>
+                    {{ course_form.name }}
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Department Scope</label>
+                    {{ course_form.department }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Semester Level</label>
+                    {{ course_form.semester }}
+                </div>
+            </div>
+            <div class="edu-modal-footer">
+                <button type="button" class="btn btn-outline btn-sm" data-modal-close>Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm">Create Course</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // User search filter
-    document.getElementById('userSearch')?.addEventListener('input', function() {
-        const filter = this.value.toLowerCase();
-        const rows = document.querySelectorAll('#userTable tbody tr');
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            row.style.display = text.includes(filter) ? '' : 'none';
-        });
+    // Live Search Filter for Users Table
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('userSearch');
+        const userTable = document.getElementById('userTable');
+        
+        if (searchInput && userTable) {
+            searchInput.addEventListener('keyup', function() {
+                const query = this.value.toLowerCase();
+                const rows = userTable.querySelectorAll('tbody tr');
+                
+                rows.forEach(row => {
+                    const text = row.innerText.toLowerCase();
+                    if (text.includes(query)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
     });
 </script>
 {% endblock %}

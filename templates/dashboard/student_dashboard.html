@@ -6,9 +6,9 @@
 <section class="dashboard-section">
     <div class="dashboard-container">
         <!-- Dashboard Header -->
-        <div class="dashboard-header">
+        <div class="dashboard-header animated-slide-in">
             <div class="dashboard-welcome">
-                <h1><i class="fas fa-user-graduate"></i> Student Dashboard</h1>
+                <h1><i class="fas fa-user-graduate"></i> Student Portal</h1>
                 <p>Welcome back, <strong>{{ user.first_name|default:user.username }}</strong>!</p>
             </div>
             <div class="dashboard-actions">
@@ -18,181 +18,192 @@
             </div>
         </div>
 
-        <!-- Stats Cards -->
-        <div class="stats-grid">
-            <div class="stat-card stat-blue">
-                <div class="stat-icon"><i class="fas fa-id-card"></i></div>
-                <div class="stat-content">
-                    <h3>Roll Number</h3>
-                    <p class="stat-value">{{ student_detail.roll_number|default:"Not Set" }}</p>
-                </div>
-            </div>
-            <div class="stat-card stat-green">
-                <div class="stat-icon"><i class="fas fa-building"></i></div>
-                <div class="stat-content">
-                    <h3>Department</h3>
-                    <p class="stat-value">{{ student_detail.department|default:"Not Set" }}</p>
-                </div>
-            </div>
-            <div class="stat-card stat-purple">
-                <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
-                <div class="stat-content">
-                    <h3>Year</h3>
-                    <p class="stat-value">{{ student_detail.get_year_display|default:"Not Set" }}</p>
-                </div>
-            </div>
-            <div class="stat-card stat-orange">
-                <div class="stat-icon"><i class="fas fa-book"></i></div>
-                <div class="stat-content">
-                    <h3>Semester</h3>
-                    <p class="stat-value">{{ student_detail.get_semester_display|default:"Not Set" }}</p>
-                </div>
-            </div>
+        <!-- Dashboard Navigation Tabs -->
+        <div class="tab-controls animated-slide-in">
+            <button class="tab-btn active" data-tab-target="my-dashboard-panel">
+                <i class="fas fa-th-large"></i> Dashboard
+            </button>
+            <button class="tab-btn" data-tab-target="course-directory-panel">
+                <i class="fas fa-book-open"></i> Course Registration
+            </button>
         </div>
 
-        <!-- Main Content Grid -->
-        <div class="dashboard-grid">
-            <!-- Academic Details Card -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-graduation-cap"></i> Academic Details</h2>
-                    <a href="{% url 'dashboard:student_detail_edit' %}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-edit"></i> Edit Details
-                    </a>
-                </div>
-                <div class="card-body">
-                    {% if student_detail %}
-                    <div class="detail-list">
-                        <div class="detail-item">
-                            <span class="detail-label">Roll Number</span>
-                            <span class="detail-value">{{ student_detail.roll_number }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Department</span>
-                            <span class="detail-value">{{ student_detail.department }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Year</span>
-                            <span class="detail-value">{{ student_detail.get_year_display }}</span>
-                        </div>
-                        <div class="detail-item">
-                            <span class="detail-label">Semester</span>
-                            <span class="detail-value">{{ student_detail.get_semester_display }}</span>
-                        </div>
-                        {% if student_detail.admission_date %}
-                        <div class="detail-item">
-                            <span class="detail-label">Admission Date</span>
-                            <span class="detail-value">{{ student_detail.admission_date|date:"F d, Y" }}</span>
-                        </div>
-                        {% endif %}
-                        {% if student_detail.guardian_name %}
-                        <div class="detail-item">
-                            <span class="detail-label">Guardian</span>
-                            <span class="detail-value">{{ student_detail.guardian_name }}</span>
-                        </div>
-                        {% endif %}
+        <!-- PANEL 1: MAIN DASHBOARD -->
+        <div class="tab-panel active" id="my-dashboard-panel">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card glass-card stat-blue">
+                    <div class="stat-icon"><i class="fas fa-id-card"></i></div>
+                    <div class="stat-content">
+                        <h3>Roll Number</h3>
+                        <p class="stat-value">{{ student_detail.roll_number|default:"Not Set" }}</p>
                     </div>
-                    {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-clipboard-list"></i>
-                        <p>No academic details added yet.</p>
+                </div>
+                <div class="stat-card glass-card stat-green">
+                    <div class="stat-icon"><i class="fas fa-building"></i></div>
+                    <div class="stat-content">
+                        <h3>Department</h3>
+                        <p class="stat-value">{{ student_detail.department|default:"Not Set" }}</p>
+                    </div>
+                </div>
+                <div class="stat-card glass-card stat-purple">
+                    <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+                    <div class="stat-content">
+                        <h3>Year</h3>
+                        <p class="stat-value">{{ student_detail.get_year_display|default:"Not Set" }}</p>
+                    </div>
+                </div>
+                <div class="stat-card glass-card stat-orange">
+                    <div class="stat-icon"><i class="fas fa-book"></i></div>
+                    <div class="stat-content">
+                        <h3>Semester</h3>
+                        <p class="stat-value">{{ student_detail.get_semester_display|default:"Not Set" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="dashboard-grid">
+                <!-- Academic Details Card -->
+                <div class="dashboard-card glass-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-graduation-cap"></i> Academic Details</h2>
                         <a href="{% url 'dashboard:student_detail_edit' %}" class="btn btn-primary btn-sm">
-                            <i class="fas fa-plus"></i> Add Details
+                            <i class="fas fa-edit"></i> Edit Details
                         </a>
                     </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Profile Summary Card -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-user"></i> Profile Summary</h2>
-                </div>
-                <div class="card-body">
-                    <div class="profile-summary">
-                        <div class="summary-avatar ratio-{{ user.profile.avatar_ratio|default:'auto' }} position-{{ user.profile.avatar_position|default:'center' }}">
-                            {% if user.profile.profile_picture %}
-                                <img src="{{ user.profile.profile_picture.url }}" alt="Profile">
-                            {% else %}
-                                <div class="avatar-placeholder small">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                            {% endif %}
-                        </div>
+                    <div class="card-body">
+                        {% if student_detail %}
                         <div class="detail-list">
                             <div class="detail-item">
-                                <span class="detail-label">Name</span>
-                                <span class="detail-value">{{ user.get_full_name|default:"Not Set" }}</span>
+                                <span class="detail-label">Roll Number</span>
+                                <span class="detail-value">{{ student_detail.roll_number }}</span>
                             </div>
                             <div class="detail-item">
-                                <span class="detail-label">Email</span>
-                                <span class="detail-value">{{ user.email }}</span>
+                                <span class="detail-label">Department</span>
+                                <span class="detail-value">{{ student_detail.department }}</span>
                             </div>
                             <div class="detail-item">
-                                <span class="detail-label">Phone</span>
-                                <span class="detail-value">{{ profile.phone|default:"Not Set" }}</span>
+                                <span class="detail-label">Year</span>
+                                <span class="detail-value">{{ student_detail.get_year_display }}</span>
                             </div>
                             <div class="detail-item">
-                                <span class="detail-label">Joined</span>
-                                <span class="detail-value">{{ user.date_joined|date:"M d, Y" }}</span>
+                                <span class="detail-label">Semester</span>
+                                <span class="detail-value">{{ student_detail.get_semester_display }}</span>
                             </div>
+                            {% if student_detail.admission_date %}
                             <div class="detail-item">
-                                <span class="detail-label">Email Verified</span>
-                                <span class="detail-value">
-                                    {% if user.is_email_verified %}
-                                        <span class="badge badge-success"><i class="fas fa-check"></i> Verified</span>
-                                    {% else %}
-                                        <span class="badge badge-warning"><i class="fas fa-clock"></i> Pending</span>
-                                    {% endif %}
-                                </span>
+                                <span class="detail-label">Admission Date</span>
+                                <span class="detail-value">{{ student_detail.admission_date|date:"F d, Y" }}</span>
+                            </div>
+                            {% endif %}
+                            {% if student_detail.guardian_name %}
+                            <div class="detail-item">
+                                <span class="detail-label">Guardian Name</span>
+                                <span class="detail-value">{{ student_detail.guardian_name }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <p>No academic details added yet.</p>
+                            <a href="{% url 'dashboard:student_detail_edit' %}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Add Details
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Profile Summary Card -->
+                <div class="dashboard-card glass-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-user"></i> Profile Summary</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="profile-summary">
+                            <div class="summary-avatar ratio-{{ user.profile.avatar_ratio|default:'auto' }} position-{{ user.profile.avatar_position|default:'center' }}">
+                                {% if user.profile.profile_picture %}
+                                    <img src="{{ user.profile.profile_picture.url }}" alt="Profile">
+                                {% else %}
+                                    <div class="avatar-placeholder small">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="detail-list">
+                                <div class="detail-item">
+                                    <span class="detail-label">Name</span>
+                                    <span class="detail-value">{{ user.get_full_name|default:user.username }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Email</span>
+                                    <span class="detail-value">{{ user.email }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Phone</span>
+                                    <span class="detail-value">{{ profile.phone|default:"Not Set" }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Joined</span>
+                                    <span class="detail-value">{{ user.date_joined|date:"M d, Y" }}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Email Verified</span>
+                                    <span class="detail-value">
+                                        {% if user.is_email_verified %}
+                                            <span class="badge badge-success"><i class="fas fa-check"></i> Verified</span>
+                                        {% else %}
+                                            <span class="badge badge-warning"><i class="fas fa-clock"></i> Pending</span>
+                                        {% endif %}
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Extra Dynamic Student Features -->
-        <div class="dashboard-grid" style="margin-top: 32px;">
-            <!-- Notice Board Card -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-bullhorn" style="color: var(--accent-blue);"></i> Announcements & Notices</h2>
-                </div>
-                <div class="card-body">
-                    {% if announcements %}
-                        <div class="announcements-feed">
-                            {% for ann in announcements %}
-                                <div class="feed-item">
-                                    <div class="feed-header">
-                                        <h3 class="feed-title">{{ ann.title }}</h3>
-                                        <span class="feed-date">{{ ann.created_at|date:"M d, Y" }}</span>
+            <!-- Extra Dynamic Student Features -->
+            <div class="dashboard-grid" style="margin-top: 32px;">
+                <!-- Notice Board Card -->
+                <div class="dashboard-card glass-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-bullhorn" style="color: var(--accent-blue);"></i> Announcements & Notices</h2>
+                    </div>
+                    <div class="card-body">
+                        {% if announcements %}
+                            <div class="announcements-feed">
+                                {% for ann in announcements %}
+                                    <div class="feed-item-premium audience-{{ ann.target_audience }}">
+                                        <div class="feed-header">
+                                            <h3 class="feed-title">{{ ann.title }}</h3>
+                                            <span class="feed-date">{{ ann.created_at|date:"M d, Y" }}</span>
+                                        </div>
+                                        <p class="feed-body">{{ ann.content }}</p>
+                                        <span class="feed-author">Posted by: {{ ann.posted_by.get_full_name|default:ann.posted_by.username }}</span>
                                     </div>
-                                    <p class="feed-body">{{ ann.content }}</p>
-                                    <span class="feed-author">Posted by: {{ ann.posted_by.get_full_name|default:ann.posted_by.username }}</span>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="empty-state">
-                            <i class="fas fa-bell-slash"></i>
-                            <p>No new announcements at this time.</p>
-                        </div>
-                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-bell-slash"></i>
+                                <p>No new announcements at this time.</p>
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
 
-            <!-- Course Enrollments & Grades -->
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-book-reader" style="color: var(--accent-purple);"></i> My Courses & Performance</h2>
-                </div>
-                <div class="card-body">
-                    {% if enrollments %}
-                        <div class="courses-list">
+                <!-- Course Enrollments & Performance -->
+                <div class="dashboard-card glass-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-book-reader" style="color: var(--accent-purple);"></i> My Courses & Performance</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="courses-list" id="enrollmentsContainer">
                             {% for enrollment in enrollments %}
-                                <div class="course-item">
+                                <div class="course-item" id="course-enrollment-{{ enrollment.course.id }}">
                                     <div class="course-info">
                                         <span class="course-code">{{ enrollment.course.code }}</span>
                                         <span class="course-name">{{ enrollment.course.name }}</span>
@@ -217,14 +228,61 @@
                                                 <strong>{{ enrollment.marks }}/100</strong>
                                             </div>
                                         </div>
+                                        <div class="course-actions-cell" style="margin-left: 12px; display: flex; align-items: center;">
+                                            <button class="btn btn-outline btn-sm btn-drop-course" data-course-id="{{ enrollment.course.id }}" style="color: var(--accent-red); border-color: rgba(239, 68, 68, 0.3); padding: 4px 8px;">
+                                                <i class="fas fa-trash"></i> Drop
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        {% if not enrollments %}
+                            <div class="empty-state" id="emptyEnrollmentState">
+                                <i class="fas fa-graduation-cap"></i>
+                                <p>You are not currently enrolled in any courses.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANEL 2: COURSE DIRECTORY -->
+        <div class="tab-panel" id="course-directory-panel">
+            <div class="dashboard-card glass-card">
+                <div class="card-header">
+                    <div>
+                        <h2><i class="fas fa-book-open"></i> Course Registration Catalog</h2>
+                        <p style="color: var(--text-secondary); margin-top: 4px;">Select from available courses to enroll in your profile</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if available_courses %}
+                        <div class="courses-grid-directory">
+                            {% for course in available_courses %}
+                                <div class="glass-card course-card-premium">
+                                    <div class="course-card-header">
+                                        <span class="course-card-code">{{ course.code }}</span>
+                                        <span class="badge" style="background: rgba(255, 255, 255, 0.05); color: var(--text-secondary); border: 1px solid var(--border-color);">
+                                            Semester {{ course.semester }}
+                                        </span>
+                                    </div>
+                                    <h3 class="course-card-title">{{ course.name }}</h3>
+                                    <p class="course-card-dept"><i class="fas fa-building"></i> {{ course.department }}</p>
+                                    <div class="course-card-actions" style="margin-top: 16px;">
+                                        <button class="btn btn-primary btn-sm btn-register-course" data-course-id="{{ course.id }}" style="width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                                            <i class="fas fa-plus-circle"></i> Enroll in Course
+                                        </button>
                                     </div>
                                 </div>
                             {% endfor %}
                         </div>
                     {% else %}
                         <div class="empty-state">
-                            <i class="fas fa-graduation-cap"></i>
-                            <p>You are not currently enrolled in any courses.</p>
+                            <i class="fas fa-book-open"></i>
+                            <p>No available courses left to register.</p>
                         </div>
                     {% endif %}
                 </div>

@@ -6,196 +6,362 @@
 <section class="dashboard-section">
     <div class="dashboard-container">
         <!-- Dashboard Header -->
-        <div class="dashboard-header">
+        <div class="dashboard-header animated-slide-in">
             <div class="dashboard-welcome">
-                <h1><i class="fas fa-chalkboard-teacher"></i> Teacher Dashboard</h1>
-                <p>Welcome back, <strong>{{ user.first_name|default:user.username }}</strong>!</p>
+                <h1><i class="fas fa-chalkboard-teacher"></i> Teacher Portal</h1>
+                <p>Manage student records, course grading, and announcements</p>
             </div>
             <div class="dashboard-actions">
-                <a href="{% url 'accounts:profile' %}" class="btn btn-outline btn-sm">
-                    <i class="fas fa-user-edit"></i> Edit Profile
-                </a>
+                <button class="btn btn-primary btn-sm" data-modal-target="postNoticeModal">
+                    <i class="fas fa-bullhorn"></i> Post Notice
+                </button>
+                <button class="btn btn-outline btn-sm" data-modal-target="enrollStudentModal">
+                    <i class="fas fa-plus-circle"></i> Enroll Student
+                </button>
             </div>
         </div>
 
-        <!-- Stats Cards -->
-        <div class="stats-grid">
-            <div class="stat-card stat-blue">
-                <div class="stat-icon"><i class="fas fa-users"></i></div>
-                <div class="stat-content">
-                    <h3>Total Students</h3>
-                    <p class="stat-value">{{ total_students }}</p>
+        <!-- Dashboard Navigation Tabs -->
+        <div class="tab-controls animated-slide-in">
+            <button class="tab-btn active" data-tab-target="overview-panel">
+                <i class="fas fa-chart-bar"></i> Overview
+            </button>
+            <button class="tab-btn" data-tab-target="enrollments-panel">
+                <i class="fas fa-user-graduate"></i> Student Performance Manager
+            </button>
+        </div>
+
+        <!-- PANEL 1: OVERVIEW -->
+        <div class="tab-panel active" id="overview-panel">
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card glass-card stat-blue">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-content">
+                        <h3>Students Taught</h3>
+                        <p class="stat-value">{{ total_students }}</p>
+                    </div>
+                </div>
+                <div class="stat-card glass-card stat-purple">
+                    <div class="stat-icon"><i class="fas fa-book"></i></div>
+                    <div class="stat-content">
+                        <h3>Active Courses</h3>
+                        <p class="stat-value">{{ courses.count }}</p>
+                    </div>
+                </div>
+                <div class="stat-card glass-card stat-green">
+                    <div class="stat-icon"><i class="fas fa-clipboard-check"></i></div>
+                    <div class="stat-content">
+                        <h3>Total Enrollments</h3>
+                        <p class="stat-value">{{ enrollments.count }}</p>
+                    </div>
                 </div>
             </div>
-            <div class="stat-card stat-green">
-                <div class="stat-icon"><i class="fas fa-building"></i></div>
-                <div class="stat-content">
-                    <h3>Departments</h3>
-                    <p class="stat-value">{{ dept_stats|length }}</p>
+
+            <!-- Notice Board and Stats Distribution -->
+            <div class="dashboard-grid" style="margin-top: 32px;">
+                <!-- Notices Section -->
+                <div class="dashboard-card glass-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-bullhorn"></i> Announcements & Notices</h2>
+                        <button class="btn btn-primary btn-xs" data-modal-target="postNoticeModal">
+                            <i class="fas fa-plus"></i> New Notice
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        {% if announcements %}
+                            <div class="announcements-feed">
+                                {% for ann in announcements %}
+                                    <div class="feed-item-premium audience-{{ ann.target_audience }}">
+                                        {% if ann.posted_by == request.user or request.user.is_superuser %}
+                                            <button class="feed-item-delete" data-notice-id="{{ ann.id }}" title="Delete Notice">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        {% endif %}
+                                        <div class="feed-header">
+                                            <h3 class="feed-title">{{ ann.title }}</h3>
+                                            <span class="feed-date">{{ ann.created_at|date:"M d, Y" }}</span>
+                                        </div>
+                                        <p class="feed-body">{{ ann.content }}</p>
+                                        <span class="feed-author">
+                                            Audience: <strong style="text-transform: capitalize;">{{ ann.get_target_audience_display }}</strong>
+                                        </span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="empty-state">
+                                <i class="fas fa-bell-slash"></i>
+                                <p>No announcements posted yet.</p>
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
-            <div class="stat-card stat-purple">
-                <div class="stat-icon"><i class="fas fa-chart-bar"></i></div>
-                <div class="stat-content">
-                    <h3>Year Groups</h3>
-                    <p class="stat-value">{{ year_stats|length }}</p>
+
+                <!-- Academic Distribution Statistics -->
+                <div class="dashboard-card glass-card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-chart-pie"></i> Student Distribution</h2>
+                    </div>
+                    <div class="card-body">
+                        <h4 style="margin-bottom: 12px; font-weight: 600;"><i class="fas fa-building"></i> Department Stats</h4>
+                        <div class="detail-list" style="margin-bottom: 24px;">
+                            {% for stat in dept_stats %}
+                                <div class="detail-item">
+                                    <span class="detail-label">{{ stat.department|default:"Not Defined" }}</span>
+                                    <span class="detail-value badge badge-success">{{ stat.count }} Students</span>
+                                </div>
+                            {% empty %}
+                                <p style="color: var(--text-muted);">No statistics available.</p>
+                            {% endfor %}
+                        </div>
+
+                        <h4 style="margin-bottom: 12px; font-weight: 600;"><i class="fas fa-graduation-cap"></i> Year-wise Distribution</h4>
+                        <div class="detail-list">
+                            {% for stat in year_stats %}
+                                <div class="detail-item">
+                                    <span class="detail-label">
+                                        {% if stat.year == '1' %}First Year
+                                        {% elif stat.year == '2' %}Second Year
+                                        {% elif stat.year == '3' %}Third Year
+                                        {% elif stat.year == '4' %}Fourth Year
+                                        {% else %}Not Set
+                                        {% endif %}
+                                    </span>
+                                    <span class="detail-value badge badge-info">{{ stat.count }} Students</span>
+                                </div>
+                            {% empty %}
+                                <p style="color: var(--text-muted);">No statistics available.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Main Content Grid -->
-        <div class="dashboard-grid">
-            <!-- Student List -->
-            <div class="dashboard-card full-width">
+        <!-- PANEL 2: STUDENT PERFORMANCE MANAGER -->
+        <div class="tab-panel" id="enrollments-panel">
+            <div class="dashboard-card glass-card full-width">
                 <div class="card-header">
-                    <h2><i class="fas fa-list"></i> Student List</h2>
+                    <div>
+                        <h2><i class="fas fa-edit"></i> Student Grades & Performance</h2>
+                        <p style="color: var(--text-secondary); margin-top: 4px;">Update marks, attendance, and grades for enrolled students</p>
+                    </div>
                     <div class="card-header-actions">
-                        <input type="text" class="form-input search-input" id="studentSearch"
-                               placeholder="Search students...">
+                        <button class="btn btn-primary btn-sm" data-modal-target="enrollStudentModal">
+                            <i class="fas fa-user-plus"></i> Enroll Student
+                        </button>
                     </div>
                 </div>
                 <div class="card-body">
-                    {% if students %}
                     <div class="table-responsive">
-                        <table class="data-table" id="studentTable">
+                        <table class="data-table" id="studentPerformanceTable">
                             <thead>
                                 <tr>
-                                    <th>#</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Roll No.</th>
-                                    <th>Department</th>
-                                    <th>Year</th>
-                                    <th>Semester</th>
-                                    <th>Status</th>
+                                    <th>Student</th>
+                                    <th>Course</th>
+                                    <th>Attendance</th>
+                                    <th>Marks</th>
+                                    <th>Grade</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for student in students %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>
-                                        <div class="user-cell">
-                                            <div class="user-avatar-sm">
-                                                {{ student.first_name|first|default:"S" }}
+                                {% for enrollment in enrollments %}
+                                    <tr id="enrollment-row-{{ enrollment.id }}">
+                                        <td>
+                                            <div class="user-cell">
+                                                <div class="user-avatar-sm">
+                                                    {{ enrollment.student.username|first|upper }}
+                                                </div>
+                                                <div>
+                                                    <strong>{{ enrollment.student.get_full_name|default:enrollment.student.username }}</strong>
+                                                    <span style="display:block; font-size:0.75rem; color:var(--text-muted);">{{ enrollment.student.email }}</span>
+                                                </div>
                                             </div>
-                                            {{ student.get_full_name|default:student.username }}
-                                        </div>
-                                    </td>
-                                    <td>{{ student.email }}</td>
-                                    <td>{{ student.student_detail.roll_number|default:"-" }}</td>
-                                    <td>{{ student.student_detail.department|default:"-" }}</td>
-                                    <td>{{ student.student_detail.get_year_display|default:"-" }}</td>
-                                    <td>{{ student.student_detail.get_semester_display|default:"-" }}</td>
-                                    <td>
-                                        {% if student.is_active %}
-                                            <span class="badge badge-success">Active</span>
-                                        {% else %}
-                                            <span class="badge badge-danger">Inactive</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
+                                        </td>
+                                        <td>
+                                            <span style="font-weight: 600; color: var(--accent-purple);">{{ enrollment.course.code }}</span>
+                                            <span style="display:block; font-size:0.75rem; color:var(--text-muted);">{{ enrollment.course.name }}</span>
+                                        </td>
+                                        <td class="perf-attendance">
+                                            {{ enrollment.attendance_percentage }}%
+                                        </td>
+                                        <td class="perf-marks">
+                                            {{ enrollment.marks }}/100
+                                        </td>
+                                        <td class="perf-grade">
+                                            <span class="badge badge-info">{{ enrollment.grade|default:"N/A" }}</span>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn btn-outline btn-xs" 
+                                                        data-enrollment-id="{{ enrollment.id }}" 
+                                                        data-marks="{{ enrollment.marks }}" 
+                                                        data-grade="{{ enrollment.grade|default:'' }}" 
+                                                        data-attendance="{{ enrollment.attendance_percentage }}"
+                                                        data-student="{{ enrollment.student.get_full_name|default:enrollment.student.username }}"
+                                                        data-course="{{ enrollment.course.code }} - {{ enrollment.course.name }}"
+                                                        data-modal-target="editPerformanceModal"
+                                                        style="padding: 4px 8px;">
+                                                    <i class="fas fa-edit"></i> Edit Performance
+                                                </button>
+                                                <button class="btn btn-outline btn-xs btn-drop-course" 
+                                                        data-course-id="{{ enrollment.course.id }}"
+                                                        style="color: var(--accent-red); border-color: rgba(239, 68, 68, 0.3); padding: 4px 8px;">
+                                                    <i class="fas fa-trash"></i> Drop
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center" style="padding: 30px; color: var(--text-muted);">
+                                            No student enrollments exist in the database.
+                                        </td>
+                                    </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
-                    {% else %}
-                    <div class="empty-state">
-                        <i class="fas fa-users"></i>
-                        <p>No students registered yet.</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Department Stats -->
-            {% if dept_stats %}
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-chart-pie"></i> Department Statistics</h2>
-                </div>
-                <div class="card-body">
-                    <div class="chart-bars-horizontal">
-                        {% for dept in dept_stats %}
-                        <div class="bar-item">
-                            <div class="bar-label">{{ dept.department|default:"Unknown" }}</div>
-                            <div class="bar-track">
-                                <div class="bar-fill" style="width: {% widthratio dept.count total_students 100 %}%">
-                                    {{ dept.count }}
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Year Stats -->
-            {% if year_stats %}
-            <div class="dashboard-card">
-                <div class="card-header">
-                    <h2><i class="fas fa-layer-group"></i> Year Distribution</h2>
-                </div>
-                <div class="card-body">
-                    <div class="chart-bars-horizontal">
-                        {% for yr in year_stats %}
-                        <div class="bar-item">
-                            <div class="bar-label">Year {{ yr.year }}</div>
-                            <div class="bar-track">
-                                <div class="bar-fill bar-fill-alt" style="width: {% widthratio yr.count total_students 100 %}%">
-                                    {{ yr.count }}
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Teacher Notice Board -->
-        <div class="dashboard-grid" style="margin-top: 32px;">
-            <div class="dashboard-card full-width">
-                <div class="card-header">
-                    <h2><i class="fas fa-bullhorn" style="color: var(--accent-blue);"></i> Announcements Board</h2>
-                </div>
-                <div class="card-body">
-                    {% if announcements %}
-                        <div class="announcements-feed">
-                            {% for ann in announcements %}
-                                <div class="feed-item">
-                                    <div class="feed-header">
-                                        <h3 class="feed-title">{{ ann.title }}</h3>
-                                        <span class="feed-date">{{ ann.created_at|date:"M d, Y" }}</span>
-                                    </div>
-                                    <p class="feed-body">{{ ann.content }}</p>
-                                    <span class="feed-author">Posted by: {{ ann.posted_by.get_full_name|default:ann.posted_by.username }}</span>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="empty-state">
-                            <i class="fas fa-bell-slash"></i>
-                            <p>No new announcements at this time.</p>
-                        </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
 </section>
+
+<!-- MODAL 1: POST NOTICE -->
+<div class="edu-modal" id="postNoticeModal">
+    <div class="edu-modal-content">
+        <div class="edu-modal-header">
+            <h3><i class="fas fa-bullhorn text-primary"></i> Create Announcement</h3>
+            <button class="edu-modal-close"><i class="fas fa-times"></i></button>
+        </div>
+        <form action="{% url 'dashboard:create_announcement' %}" method="POST">
+            {% csrf_token %}
+            <div class="edu-modal-body">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Notice Title</label>
+                    {{ announcement_form.title }}
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Message / Details</label>
+                    {{ announcement_form.content }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Audience Focus</label>
+                    {{ announcement_form.target_audience }}
+                </div>
+            </div>
+            <div class="edu-modal-footer">
+                <button type="button" class="btn btn-outline btn-sm" data-modal-close>Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm">Publish Notice</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL 2: ENROLL STUDENT IN COURSE -->
+<div class="edu-modal" id="enrollStudentModal">
+    <div class="edu-modal-content">
+        <div class="edu-modal-header">
+            <h3><i class="fas fa-user-plus text-primary"></i> Enroll Student in Course</h3>
+            <button class="edu-modal-close"><i class="fas fa-times"></i></button>
+        </div>
+        <form action="{% url 'dashboard:teacher_enroll_student' %}" method="POST">
+            {% csrf_token %}
+            <div class="edu-modal-body">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Select Student</label>
+                    {{ enroll_student_form.student }}
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Select Course</label>
+                    {{ enroll_student_form.course }}
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Starting Attendance (%)</label>
+                    {{ enroll_student_form.attendance_percentage }}
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Assigned Grade</label>
+                    {{ enroll_student_form.grade }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Starting Marks (0-100)</label>
+                    {{ enroll_student_form.marks }}
+                </div>
+            </div>
+            <div class="edu-modal-footer">
+                <button type="button" class="btn btn-outline btn-sm" data-modal-close>Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm">Enroll Student</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL 3: UPDATE STUDENT PERFORMANCE -->
+<div class="edu-modal" id="editPerformanceModal">
+    <div class="edu-modal-content">
+        <div class="edu-modal-header">
+            <div>
+                <h3><i class="fas fa-edit text-primary"></i> Edit Academic Score</h3>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">
+                    Student: <strong id="modal-student-name"></strong> | Course: <strong id="modal-course-name"></strong>
+                </p>
+            </div>
+            <button class="edu-modal-close"><i class="fas fa-times"></i></button>
+        </div>
+        <form action="" method="POST" class="form-performance-edit">
+            {% csrf_token %}
+            <div class="edu-modal-body">
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Attendance (%)</label>
+                    {{ performance_form.attendance_percentage }}
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label class="form-label">Grade</label>
+                    {{ performance_form.grade }}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Marks (Out of 100)</label>
+                    {{ performance_form.marks }}
+                </div>
+            </div>
+            <div class="edu-modal-footer">
+                <button type="button" class="btn btn-outline btn-sm" data-modal-close>Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // Student search filter
-    document.getElementById('studentSearch')?.addEventListener('input', function() {
-        const filter = this.value.toLowerCase();
-        const rows = document.querySelectorAll('#studentTable tbody tr');
-        rows.forEach(row => {
-            const text = row.textContent.toLowerCase();
-            row.style.display = text.includes(filter) ? '' : 'none';
+    document.addEventListener('DOMContentLoaded', function() {
+        // When opening the editPerformanceModal, copy parameters from data attributes to modal input fields
+        const perfEditBtns = document.querySelectorAll('[data-enrollment-id][data-modal-target="editPerformanceModal"]');
+        
+        perfEditBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const enrollmentId = this.getAttribute('data-enrollment-id');
+                const studentName = this.getAttribute('data-student');
+                const courseCode = this.getAttribute('data-course');
+                const attendance = this.getAttribute('data-attendance');
+                const marks = this.getAttribute('data-marks');
+                const grade = this.getAttribute('data-grade');
+                
+                const modal = document.getElementById('editPerformanceModal');
+                if (modal) {
+                    modal.querySelector('#modal-student-name').innerText = studentName;
+                    modal.querySelector('#modal-course-name').innerText = courseCode;
+                    modal.querySelector('form').setAttribute('action', `/dashboard/student-performance/${enrollmentId}/edit/`);
+                    modal.querySelector('[name=attendance_percentage]').value = attendance;
+                    modal.querySelector('[name=marks]').value = marks;
+                    modal.querySelector('[name=grade]').value = grade;
+                }
+            });
         });
     });
 </script>

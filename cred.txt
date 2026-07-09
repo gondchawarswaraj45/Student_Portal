@@ -1,0 +1,27 @@
+EduPortal User Credentials
+==============================
+
+Role: ADMIN
+Username: admin
+Email: admin@eduportal.com
+Password: AdminPass123!
+------------------------------
+
+Role: STUDENT
+Username: swaraj45
+Email: swarajgondchawar@gmail.com
+Password: SwarajPass123!
+------------------------------
+
+Role: STUDENT
+Username: student2
+Email: student2@eduportal.com
+Password: StudentPass123!
+------------------------------
+
+Role: TEACHER
+Username: teacher1
+Email: teacher1@eduportal.com
+Password: TeacherPass123!
+------------------------------
+
