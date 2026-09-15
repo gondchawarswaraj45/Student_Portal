@@ -1,15 +1,34 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.db.models import Count
+from django.db.models import Count, Avg, Q
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
 from accounts.models import User, Profile, StudentDetail
-from accounts.decorators import student_required, teacher_required, admin_required
+from accounts.decorators import student_required, teacher_required, admin_required, post_required
 from accounts.forms import StudentDetailForm, AdminCreateUserForm, AdminEditUserForm, ProfileUpdateForm
-from .models import Announcement, Course, Enrollment
+from .models import Announcement, Course, Enrollment, GRADE_SCALE, get_grade_points
 from .forms import AnnouncementForm, CourseForm, EnrollmentForm, TeacherEnrollStudentForm
+
+
+# Maximum courses a student can enroll in per semester
+MAX_COURSES_PER_STUDENT = 6
+
+
+def calculate_gpa(enrollments):
+    """Calculate GPA from active enrollments with marks > 0."""
+    graded = [e for e in enrollments if e.marks > 0 and e.status == 'active']
+    if not graded:
+        return 0.0
+    total_points = sum(e.grade_points * e.course.credits for e in graded)
+    total_credits = sum(e.course.credits for e in graded)
+    return round(total_points / total_credits, 2) if total_credits > 0 else 0.0
+
+
+def calculate_total_credits(enrollments):
+    """Calculate total credits from active enrollments."""
+    return sum(e.course.credits for e in enrollments if e.status == 'active')
 
 
 @login_required
@@ -25,29 +44,54 @@ def dashboard_redirect(request):
 
 @student_required
 def student_dashboard(request):
-    """Dashboard for students."""
+    """Dashboard for students with GPA, attendance warnings, and credit tracking."""
     student_detail = StudentDetail.objects.filter(user=request.user).first()
     profile = Profile.objects.filter(user=request.user).first()
     
     # Query student courses / enrollments
-    enrollments = Enrollment.objects.filter(student=request.user).select_related('course')
+    enrollments = list(
+        Enrollment.objects.filter(student=request.user, status='active')
+        .select_related('course')
+    )
     
-    # Query announcements targeting all or student
-    announcements = Announcement.objects.filter(target_audience__in=['all', 'student']).order_by('-created_at')[:5]
+    # Calculate GPA and credits
+    gpa = calculate_gpa(enrollments)
+    total_credits = calculate_total_credits(enrollments)
+    
+    # Attendance warnings
+    low_attendance_courses = [e for e in enrollments if e.is_low_attendance]
+    
+    # Query announcements targeting all or student (exclude expired)
+    from django.utils import timezone
+    announcements = Announcement.objects.filter(
+        target_audience__in=['all', 'student']
+    ).filter(
+        Q(expires_at__isnull=True) | Q(expires_at__gt=timezone.now())
+    ).order_by('-is_pinned', '-created_at')[:5]
 
-    # Available courses (exclude already enrolled ones)
-    enrolled_course_ids = enrollments.values_list('course_id', flat=True)
-    available_courses = Course.objects.exclude(id__in=enrolled_course_ids)
-    if student_detail and student_detail.department:
-        # Prioritize courses in student's department, but show all
-        available_courses = available_courses.order_by('-department')
+    # Available courses (exclude already enrolled, only active courses)
+    enrolled_course_ids = Enrollment.objects.filter(
+        student=request.user, status='active'
+    ).values_list('course_id', flat=True)
+    
+    available_courses = Course.objects.filter(is_active=True).exclude(id__in=enrolled_course_ids)
+    if student_detail and student_detail.semester:
+        available_courses = available_courses.filter(semester=student_detail.semester)
+
+    # Check enrollment limits
+    can_enroll = len(enrollments) < MAX_COURSES_PER_STUDENT
 
     context = {
         'student_detail': student_detail,
         'profile': profile,
         'enrollments': enrollments,
+        'gpa': gpa,
+        'total_credits': total_credits,
+        'low_attendance_courses': low_attendance_courses,
         'announcements': announcements,
         'available_courses': available_courses,
+        'can_enroll': can_enroll,
+        'max_courses': MAX_COURSES_PER_STUDENT,
     }
     return render(request, 'dashboard/student_dashboard.html', context)
 
@@ -74,8 +118,8 @@ def student_detail_edit(request):
 
 @teacher_required
 def teacher_dashboard(request):
-    """Dashboard for teachers."""
-    students = User.objects.filter(role='student').select_related('student_detail', 'profile')
+    """Dashboard for teachers with performance analytics."""
+    students = User.objects.filter(role='student').select_related('profile')
     total_students = students.count()
 
     dept_stats = StudentDetail.objects.values('department').annotate(
@@ -87,11 +131,26 @@ def teacher_dashboard(request):
     ).order_by('year')
 
     # Query announcements
-    announcements = Announcement.objects.filter(target_audience__in=['all', 'teacher']).order_by('-created_at')[:5]
+    from django.utils import timezone
+    announcements = Announcement.objects.filter(
+        target_audience__in=['all', 'teacher']
+    ).filter(
+        Q(expires_at__isnull=True) | Q(expires_at__gt=timezone.now())
+    ).order_by('-is_pinned', '-created_at')[:5]
     
-    # Query all enrollments
-    enrollments = Enrollment.objects.select_related('student', 'course').order_by('student__username')
+    # Query all active enrollments
+    enrollments = Enrollment.objects.filter(status='active').select_related('student', 'course').order_by('student__username')
     courses = Course.objects.all()
+
+    # Performance analytics
+    avg_marks = enrollments.aggregate(avg=Avg('marks'))['avg'] or 0
+    pass_count = enrollments.filter(marks__gte=40).count()
+    fail_count = enrollments.filter(marks__lt=40, marks__gt=0).count()
+    total_graded = pass_count + fail_count
+    pass_rate = round((pass_count / total_graded) * 100, 1) if total_graded > 0 else 0
+
+    # Attendance defaulters (below 75%)
+    defaulters = enrollments.filter(attendance_percentage__lt=75).select_related('student', 'course')
 
     # Forms
     announcement_form = AnnouncementForm()
@@ -109,6 +168,11 @@ def teacher_dashboard(request):
         'announcement_form': announcement_form,
         'enroll_student_form': enroll_student_form,
         'performance_form': performance_form,
+        'avg_marks': round(avg_marks, 1),
+        'pass_rate': pass_rate,
+        'pass_count': pass_count,
+        'fail_count': fail_count,
+        'defaulters': defaulters,
     }
     return render(request, 'dashboard/teacher_dashboard.html', context)
 
@@ -128,8 +192,12 @@ def admin_dashboard(request):
     ).order_by('-count')
 
     # Query announcements
-    announcements = Announcement.objects.all().order_by('-created_at')[:5]
+    announcements = Announcement.objects.all().order_by('-is_pinned', '-created_at')[:5]
     courses = Course.objects.all()
+
+    # Active enrollments stats
+    total_enrollments = Enrollment.objects.filter(status='active').count()
+    total_courses = courses.count()
 
     # Forms
     announcement_form = AnnouncementForm()
@@ -147,6 +215,8 @@ def admin_dashboard(request):
         'courses': courses,
         'announcement_form': announcement_form,
         'course_form': course_form,
+        'total_enrollments': total_enrollments,
+        'total_courses': total_courses,
     }
     return render(request, 'dashboard/admin_dashboard.html', context)
 
@@ -228,9 +298,16 @@ def admin_manage_user(request, user_id):
 
 
 @admin_required
+@post_required
 def admin_toggle_active(request, user_id):
-    """Admin: activate/deactivate a user."""
+    """Admin: activate/deactivate a user (POST only)."""
     managed_user = get_object_or_404(User, pk=user_id)
+
+    # Prevent admin from deactivating themselves
+    if managed_user == request.user:
+        messages.error(request, 'You cannot deactivate your own account.')
+        return redirect('dashboard:admin_dashboard')
+
     managed_user.is_active = not managed_user.is_active
     managed_user.save()
     status = 'activated' if managed_user.is_active else 'deactivated'
@@ -239,11 +316,17 @@ def admin_toggle_active(request, user_id):
 
 
 @admin_required
+@post_required
 def admin_delete_user(request, user_id):
-    """Admin: delete a user."""
+    """Admin: delete a user (POST only with self-protection)."""
     managed_user = get_object_or_404(User, pk=user_id)
     if managed_user == request.user:
         messages.error(request, 'You cannot delete your own account.')
+        return redirect('dashboard:admin_dashboard')
+
+    # Prevent deleting other admins unless superuser
+    if managed_user.is_admin_user and not request.user.is_superuser:
+        messages.error(request, 'Only superusers can delete admin accounts.')
         return redirect('dashboard:admin_dashboard')
 
     username = managed_user.username
@@ -274,8 +357,9 @@ def create_announcement(request):
 
 
 @login_required
+@post_required
 def delete_announcement(request, pk):
-    """Delete a notice/announcement."""
+    """Delete a notice/announcement (POST only)."""
     ann = get_object_or_404(Announcement, pk=pk)
     if not (request.user.is_superuser or request.user.is_admin_user or request.user == ann.posted_by):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -293,27 +377,49 @@ def delete_announcement(request, pk):
 @student_required
 @require_POST
 def student_course_register(request):
-    """Enroll a student in a course via AJAX."""
+    """Enroll a student in a course via AJAX with capacity and limit checks."""
     course_id = request.POST.get('course_id')
     course = get_object_or_404(Course, id=course_id)
-    
-    if Enrollment.objects.filter(student=request.user, course=course).exists():
+
+    # Check if course is active
+    if not course.is_active:
+        return JsonResponse({'success': False, 'message': 'This course is not available for registration.'})
+
+    # Check if already enrolled
+    if Enrollment.objects.filter(student=request.user, course=course, status='active').exists():
         return JsonResponse({'success': False, 'message': 'You are already registered for this course.'})
-    
+
+    # Check enrollment limit
+    active_count = Enrollment.objects.filter(student=request.user, status='active').count()
+    if active_count >= MAX_COURSES_PER_STUDENT:
+        return JsonResponse({
+            'success': False,
+            'message': f'You have reached the maximum of {MAX_COURSES_PER_STUDENT} courses per semester.'
+        })
+
+    # Check course capacity
+    if course.is_full:
+        return JsonResponse({
+            'success': False,
+            'message': f'Course {course.code} is full ({course.max_enrollment} students enrolled).'
+        })
+
     enrollment = Enrollment.objects.create(
         student=request.user,
         course=course,
         attendance_percentage=100.0,
         marks=0,
-        grade='N/A'
+        grade='N/A',
+        status='active',
     )
     return JsonResponse({
         'success': True,
-        'message': f'Successfully registered for {course.code}!',
+        'message': f'Successfully registered for {course.code} — {course.name}!',
         'course': {
             'id': course.id,
             'code': course.code,
             'name': course.name,
+            'credits': course.credits,
             'attendance': float(enrollment.attendance_percentage),
             'marks': enrollment.marks,
             'grade': enrollment.grade,
@@ -326,21 +432,22 @@ def student_course_register(request):
 def student_course_drop(request, course_id):
     """Drop a course enrollment via AJAX."""
     course = get_object_or_404(Course, id=course_id)
-    enrollment = Enrollment.objects.filter(student=request.user, course=course).first()
+    enrollment = Enrollment.objects.filter(student=request.user, course=course, status='active').first()
     if enrollment:
-        enrollment.delete()
+        enrollment.status = 'dropped'
+        enrollment.save()
         return JsonResponse({'success': True, 'message': f'Dropped course {course.code} successfully.'})
     return JsonResponse({'success': False, 'message': 'Enrollment not found.'}, status=404)
 
 
 @teacher_required
 def edit_student_performance(request, enrollment_id):
-    """Update grade, marks, and attendance for a student's enrollment."""
+    """Update grade, marks, and attendance with auto-grade calculation."""
     enrollment = get_object_or_404(Enrollment, id=enrollment_id)
     if request.method == 'POST':
         form = EnrollmentForm(request.POST, instance=enrollment)
         if form.is_valid():
-            form.save()
+            form.save()  # Grade auto-calculated in model save()
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({
                     'success': True,
@@ -367,6 +474,14 @@ def teacher_enroll_student(request):
     if request.method == 'POST':
         form = TeacherEnrollStudentForm(request.POST)
         if form.is_valid():
+            enrollment = form.save(commit=False)
+            enrollment.status = 'active'
+
+            # Check capacity
+            if enrollment.course.is_full:
+                messages.error(request, f'Course {enrollment.course.code} is at full capacity.')
+                return redirect('dashboard:teacher_dashboard')
+
             form.save()
             messages.success(request, 'Student enrolled successfully!')
         else:
@@ -392,8 +507,9 @@ def admin_manage_courses(request):
 
 
 @admin_required
+@post_required
 def admin_delete_course(request, course_id):
-    """Admin view to delete a course."""
+    """Admin view to delete a course (POST only)."""
     course = get_object_or_404(Course, id=course_id)
     code = course.code
     course.delete()

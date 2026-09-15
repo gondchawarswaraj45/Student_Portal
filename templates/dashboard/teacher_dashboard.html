@@ -34,7 +34,7 @@
         <!-- PANEL 1: OVERVIEW -->
         <div class="tab-panel active" id="overview-panel">
             <!-- Stats Grid -->
-            <div class="stats-grid">
+            <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
                 <div class="stat-card glass-card stat-blue">
                     <div class="stat-icon"><i class="fas fa-users"></i></div>
                     <div class="stat-content">
@@ -50,13 +50,95 @@
                     </div>
                 </div>
                 <div class="stat-card glass-card stat-green">
-                    <div class="stat-icon"><i class="fas fa-clipboard-check"></i></div>
+                    <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
                     <div class="stat-content">
-                        <h3>Total Enrollments</h3>
-                        <p class="stat-value">{{ enrollments.count }}</p>
+                        <h3>Class Average</h3>
+                        <p class="stat-value">{{ avg_marks }} <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: normal;">/ 100</span></p>
+                    </div>
+                </div>
+                <div class="stat-card glass-card stat-orange">
+                    <div class="stat-icon"><i class="fas fa-percentage"></i></div>
+                    <div class="stat-content">
+                        <h3>Pass Rate</h3>
+                        <p class="stat-value">{{ pass_rate }}% <span style="font-size: 0.75rem; color: var(--text-muted); display: block; font-weight: normal;">{{ pass_count }} pass / {{ fail_count }} fail</span></p>
+                    </div>
+                </div>
+                <div class="stat-card glass-card stat-blue" style="border-left: 3px solid var(--accent-red);">
+                    <div class="stat-icon" style="color: var(--accent-red);"><i class="fas fa-user-clock"></i></div>
+                    <div class="stat-content">
+                        <h3>Defaulters (<75%)</h3>
+                        <p class="stat-value" style="color: var(--accent-red);">{{ defaulters.count }}</p>
                     </div>
                 </div>
             </div>
+
+            {% if defaulters %}
+            <!-- Attendance Defaulters List -->
+            <div class="dashboard-card glass-card" style="margin-top: 24px; border-left: 4px solid var(--accent-red);">
+                <div class="card-header" style="padding-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="background: rgba(239, 68, 68, 0.15); color: var(--accent-red); width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </span>
+                        <div>
+                            <h2 style="font-size: 1.15rem; margin: 0;">Attendance Defaulters (< 75% Attendance)</h2>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Students requiring immediate attendance intervention</p>
+                        </div>
+                    </div>
+                    <span class="badge badge-danger">{{ defaulters.count }} At-Risk</span>
+                </div>
+                <div class="card-body" style="padding-top: 8px;">
+                    <div class="table-responsive">
+                        <table class="data-table" style="font-size: 0.88rem;">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Course</th>
+                                    <th>Attendance</th>
+                                    <th>Current Marks</th>
+                                    <th>Grade</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for d in defaulters %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ d.student.get_full_name|default:d.student.username }}</strong>
+                                        <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">{{ d.student.email }}</span>
+                                    </td>
+                                    <td>
+                                        <span style="font-weight: 600; color: var(--accent-purple);">{{ d.course.code }}</span>
+                                        <span style="display: block; font-size: 0.75rem; color: var(--text-muted);">{{ d.course.name }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-danger" style="font-size: 0.85rem; font-weight: 700;">
+                                            <i class="fas fa-exclamation-circle"></i> {{ d.attendance_percentage }}%
+                                        </span>
+                                    </td>
+                                    <td>{{ d.marks }}/100</td>
+                                    <td><span class="badge badge-info">{{ d.grade|default:"N/A" }}</span></td>
+                                    <td>
+                                        <button class="btn btn-outline btn-xs" 
+                                                data-enrollment-id="{{ d.id }}" 
+                                                data-marks="{{ d.marks }}" 
+                                                data-grade="{{ d.grade|default:'' }}" 
+                                                data-attendance="{{ d.attendance_percentage }}"
+                                                data-student="{{ d.student.get_full_name|default:d.student.username }}"
+                                                data-course="{{ d.course.code }} - {{ d.course.name }}"
+                                                data-modal-target="editPerformanceModal"
+                                                style="padding: 4px 8px;">
+                                            <i class="fas fa-edit"></i> Update
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
 
             <!-- Notice Board and Stats Distribution -->
             <div class="dashboard-grid" style="margin-top: 32px;">
@@ -320,12 +402,17 @@
                     {{ performance_form.attendance_percentage }}
                 </div>
                 <div class="form-group" style="margin-bottom: 16px;">
-                    <label class="form-label">Grade</label>
-                    {{ performance_form.grade }}
-                </div>
-                <div class="form-group">
                     <label class="form-label">Marks (Out of 100)</label>
                     {{ performance_form.marks }}
+                </div>
+                <div class="form-group" style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.88rem; color: var(--text-secondary);">Auto-Calculated Grade:</span>
+                        <span id="modal-calculated-grade" class="badge badge-success" style="font-size: 1rem; font-weight: 700; padding: 4px 12px;">A</span>
+                    </div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 4px;">
+                        Scale: 90+ A+, 80-89 A, 70-79 B+, 60-69 B, 50-59 C, 40-49 D, <40 F
+                    </span>
                 </div>
             </div>
             <div class="edu-modal-footer">
@@ -339,7 +426,26 @@
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+        // Helper for auto-calculating grade
+        function getGradeFromMarks(marks) {
+            marks = parseInt(marks) || 0;
+            if (marks >= 90) return 'A+';
+            if (marks >= 80) return 'A';
+            if (marks >= 70) return 'B+';
+            if (marks >= 60) return 'B';
+            if (marks >= 50) return 'C';
+            if (marks >= 40) return 'D';
+            return 'F';
+        }
+
+        const marksInput = document.querySelector('#editPerformanceModal [name=marks]');
+        const gradeBadge = document.getElementById('modal-calculated-grade');
+        if (marksInput && gradeBadge) {
+            marksInput.addEventListener('input', function() {
+                gradeBadge.innerText = getGradeFromMarks(this.value);
+            });
+        }
+
         // When opening the editPerformanceModal, copy parameters from data attributes to modal input fields
         const perfEditBtns = document.querySelectorAll('[data-enrollment-id][data-modal-target="editPerformanceModal"]');
         
@@ -359,7 +465,9 @@
                     modal.querySelector('form').setAttribute('action', `/dashboard/student-performance/${enrollmentId}/edit/`);
                     modal.querySelector('[name=attendance_percentage]').value = attendance;
                     modal.querySelector('[name=marks]').value = marks;
-                    modal.querySelector('[name=grade]').value = grade;
+                    if (gradeBadge) {
+                        gradeBadge.innerText = grade || getGradeFromMarks(marks);
+                    }
                 }
             });
         });

@@ -10,14 +10,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=3.5">
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Glowing background blobs -->
+    <!-- Glowing background blobs & ambient grid -->
     <div class="glowing-bg-container">
+        <div class="bg-grid-overlay"></div>
         <div class="glowing-blob blob-red"></div>
         <div class="glowing-blob blob-purple"></div>
+        <div class="glowing-blob blob-ambient"></div>
     </div>
 
     <!-- Navigation -->
@@ -36,9 +38,9 @@
                     <li><a href="{% url 'dashboard:redirect' %}" class="nav-link"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                     <li><a href="{% url 'accounts:profile' %}" class="nav-link"><i class="fas fa-user"></i> Profile</a></li>
                     <li>
-                        <a href="{% url 'accounts:logout' %}" class="nav-link nav-btn btn-logout">
+                        <button type="button" class="nav-link nav-btn btn-logout" data-modal-target="logoutModal" style="background: none; border: 1px solid rgba(239, 68, 68, 0.4); cursor: pointer;">
                             <i class="fas fa-sign-out-alt"></i> Logout
-                        </a>
+                        </button>
                     </li>
                     <li class="nav-user-badge">
                         <span class="user-role-badge role-{{ user.role }}">
@@ -123,6 +125,33 @@
             </div>
         </div>
     </footer>
+
+    {% if user.is_authenticated %}
+    <!-- Logout Confirmation Modal -->
+    <div class="edu-modal" id="logoutModal">
+        <div class="edu-modal-content" style="max-width: 420px; text-align: center; position: relative;">
+            <div class="edu-modal-header" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
+                <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(239, 68, 68, 0.12); display: flex; align-items: center; justify-content: center; margin: 8px auto 0; color: var(--accent-red); font-size: 1.5rem;">
+                    <i class="fas fa-sign-out-alt"></i>
+                </div>
+                <button class="edu-modal-close" style="position: absolute; right: 16px; top: 16px;"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="edu-modal-body" style="padding: 16px 24px 24px;">
+                <h3 style="margin-bottom: 8px; font-size: 1.3rem;">Confirm Sign Out</h3>
+                <p style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.5;">Are you sure you want to end your EduPortal session?</p>
+            </div>
+            <div class="edu-modal-footer" style="justify-content: center; gap: 12px; border-top: none; padding-top: 0; padding-bottom: 24px;">
+                <button type="button" class="btn btn-outline btn-sm" data-modal-close>Cancel</button>
+                <form action="{% url 'accounts:logout' %}" method="POST" style="margin: 0; display: inline-block;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm" style="background: #ef4444; border-color: #ef4444; color: white;">
+                        <i class="fas fa-sign-out-alt"></i> Sign Out
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     <script src="{% static 'js/main.js' %}"></script>
     {% block extra_js %}{% endblock %}

@@ -18,8 +18,43 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     is_email_verified = models.BooleanField(default=False)
 
+    # Security: Login rate limiting
+    failed_login_attempts = models.IntegerField(default=0)
+    lockout_until = models.DateTimeField(null=True, blank=True)
+
     def __str__(self):
         return f"{self.username} ({self.get_role_display()})"
+
+    @property
+    def is_locked_out(self):
+        """Check if account is currently locked due to too many failed login attempts."""
+        if self.lockout_until:
+            from django.utils import timezone
+            if timezone.now() < self.lockout_until:
+                return True
+            # Lockout expired — reset
+            self.failed_login_attempts = 0
+            self.lockout_until = None
+            self.save(update_fields=['failed_login_attempts', 'lockout_until'])
+        return False
+
+    def record_failed_login(self):
+        """Increment failed login counter and lock account if threshold reached."""
+        from django.utils import timezone
+        from django.conf import settings
+        import datetime
+        self.failed_login_attempts += 1
+        if self.failed_login_attempts >= getattr(settings, 'MAX_LOGIN_ATTEMPTS', 5):
+            cooldown = getattr(settings, 'LOGIN_COOLDOWN_MINUTES', 30)
+            self.lockout_until = timezone.now() + datetime.timedelta(minutes=cooldown)
+        self.save(update_fields=['failed_login_attempts', 'lockout_until'])
+
+    def reset_login_attempts(self):
+        """Reset failed login counter on successful login."""
+        if self.failed_login_attempts > 0:
+            self.failed_login_attempts = 0
+            self.lockout_until = None
+            self.save(update_fields=['failed_login_attempts', 'lockout_until'])
 
     @property
     def is_student(self):

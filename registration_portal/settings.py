@@ -54,6 +54,7 @@ MIDDLEWARE = [
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'accounts.middleware.SessionTimeoutMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -168,3 +169,38 @@ MESSAGE_TAGS = {
     messages.WARNING: 'warning',
     messages.ERROR: 'danger',
 }
+
+# =============================================
+# SECURITY SETTINGS
+# =============================================
+
+# Session Security
+SESSION_COOKIE_AGE = 1800  # 30 minutes
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_SAVE_EVERY_REQUEST = True  # Reset timeout on activity
+
+# CSRF Protection
+CSRF_COOKIE_HTTPONLY = True
+
+# Security Headers
+X_FRAME_OPTIONS = 'DENY'
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+
+# Production-only security (when DEBUG=False)
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+# Login Rate Limiting
+MAX_LOGIN_ATTEMPTS = 5
+LOGIN_COOLDOWN_MINUTES = 30
+
+# File Upload Limits
+MAX_UPLOAD_SIZE_MB = 2
+ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']

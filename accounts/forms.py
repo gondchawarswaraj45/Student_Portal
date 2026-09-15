@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth import authenticate
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import User, Profile, StudentDetail
 
@@ -138,7 +139,7 @@ class AdminEditUserForm(forms.ModelForm):
 
 
 class UserLoginForm(AuthenticationForm):
-    """Custom login form with styled widgets."""
+    """Custom login form supporting both username and email with styled widgets."""
 
     username = forms.CharField(
         widget=forms.TextInput(attrs={
@@ -152,6 +153,32 @@ class UserLoginForm(AuthenticationForm):
             'placeholder': 'Enter your password',
         })
     )
+
+    def clean(self):
+        username = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+
+        if username and password:
+            auth_username = username.strip()
+            # If user entered an email address, lookup their username
+            if '@' in auth_username:
+                try:
+                    user_obj = User.objects.get(email__iexact=auth_username)
+                    auth_username = user_obj.username
+                except (User.DoesNotExist, User.MultipleObjectsReturned):
+                    user_obj = User.objects.filter(email__iexact=auth_username).first()
+                    if user_obj:
+                        auth_username = user_obj.username
+
+            self.user_cache = authenticate(
+                self.request, username=auth_username, password=password
+            )
+            if self.user_cache is None:
+                raise self.get_invalid_login_error()
+            else:
+                self.confirm_login_allowed(self.user_cache)
+
+        return self.cleaned_data
 
 
 class ProfileUpdateForm(forms.ModelForm):

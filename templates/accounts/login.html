@@ -1,70 +1,163 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Login - EduPortal{% endblock %}
 
 {% block content %}
 <section class="auth-section">
-    <div class="auth-container">
-        <div class="auth-card">
-            <div class="auth-header">
-                <div class="auth-icon">
-                    <i class="fas fa-sign-in-alt"></i>
+    <div class="auth-split-container">
+        <div class="auth-split-card glass-card">
+            <!-- Left Panel: Visual Showcase -->
+            <div class="auth-showcase-panel">
+                <div class="auth-showcase-bg" style="background-image: url('{% static 'images/auth_bg.jpg' %}');"></div>
+                <div class="auth-showcase-overlay"></div>
+                <div class="auth-showcase-content">
+                    <div class="showcase-logo">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>EduPortal</span>
+                    </div>
+                    <h2>Welcome to Your Digital Academic Hub</h2>
+                    <p>Access your personalized dashboard, manage courses, track student achievements, and oversee institution operations.</p>
+                    
+                    <div class="showcase-perks">
+                        <div class="perk-item">
+                            <i class="fas fa-shield-alt text-success"></i>
+                            <span>Enterprise-Grade Data Security</span>
+                        </div>
+                        <div class="perk-item">
+                            <i class="fas fa-bolt text-warning"></i>
+                            <span>Real-Time Academic Synchronisation</span>
+                        </div>
+                        <div class="perk-item">
+                            <i class="fas fa-check-circle text-primary"></i>
+                            <span>Role-Based Permissions (Student, Teacher, Admin)</span>
+                        </div>
+                    </div>
+
+                    <!-- Demo Fast-Fill Box for Easy Evaluation -->
+                    <div class="demo-accounts-box glass-card">
+                        <span class="demo-label"><i class="fas fa-key"></i> Quick Demo Login Fill:</span>
+                        <div class="demo-pills-row">
+                            <button type="button" class="demo-pill" onclick="fillDemo('admin', 'AdminPass123!')" title="Fill Admin Credentials">
+                                <i class="fas fa-user-shield"></i> Admin
+                            </button>
+                            <button type="button" class="demo-pill" onclick="fillDemo('swaraj45', 'SwarajPass123!')" title="Fill Student Credentials">
+                                <i class="fas fa-user-graduate"></i> Student
+                            </button>
+                            <button type="button" class="demo-pill" onclick="fillDemo('teacher1', 'TeacherPass123!')" title="Fill Teacher Credentials">
+                                <i class="fas fa-chalkboard-teacher"></i> Teacher
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <h1>Welcome Back</h1>
-                <p>Login to access your dashboard</p>
             </div>
 
-            <form method="POST" class="auth-form" id="loginForm">
-                {% csrf_token %}
+            <!-- Right Panel: Login Form -->
+            <div class="auth-form-panel">
+                <div class="auth-form-header">
+                    <div class="auth-icon-badge">
+                        <i class="fas fa-sign-in-alt"></i>
+                    </div>
+                    <h1>Sign In</h1>
+                    <p>Enter your credentials to access your account</p>
+                </div>
 
-                <!-- Username -->
-                <div class="form-group">
-                    <label class="form-label" for="id_username">
-                        <i class="fas fa-user"></i> Username
-                    </label>
-                    {{ form.username }}
-                    {% if form.username.errors %}
-                    <span class="form-error">{{ form.username.errors.0 }}</span>
+                <form method="POST" class="auth-form" id="loginForm">
+                    {% csrf_token %}
+
+                    <!-- Username -->
+                    <div class="form-group">
+                        <label class="form-label" for="id_username">
+                            <i class="fas fa-user"></i> Username or Email
+                        </label>
+                        <div class="input-with-icon">
+                            {{ form.username }}
+                            <i class="fas fa-at input-icon"></i>
+                        </div>
+                        {% if form.username.errors %}
+                        <span class="form-error"><i class="fas fa-exclamation-circle"></i> {{ form.username.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Password -->
+                    <div class="form-group">
+                        <label class="form-label" for="id_password">
+                            <i class="fas fa-lock"></i> Password
+                        </label>
+                        <div class="input-with-icon password-input-wrap">
+                            {{ form.password }}
+                            <i class="fas fa-key input-icon"></i>
+                            <button type="button" class="toggle-password-btn" id="togglePasswordBtn" title="Toggle password visibility">
+                                <i class="fas fa-eye" id="togglePasswordIcon"></i>
+                            </button>
+                        </div>
+                        {% if form.password.errors %}
+                        <span class="form-error"><i class="fas fa-exclamation-circle"></i> {{ form.password.errors.0 }}</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="remember_me">
+                            <span class="checkmark"></span>
+                            Remember me
+                        </label>
+                        <a href="{% url 'accounts:password_reset' %}" class="forgot-link">Forgot Password?</a>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                    <div class="form-errors-box">
+                        {% for error in form.non_field_errors %}
+                        <p class="form-error"><i class="fas fa-exclamation-circle"></i> {{ error }}</p>
+                        {% endfor %}
+                    </div>
                     {% endif %}
+
+                    <button type="submit" class="btn btn-primary btn-block btn-lg" id="loginBtn">
+                        <span>Sign In</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </form>
+
+                <div class="auth-footer">
+                    <p>Need a student account? <a href="{% url 'accounts:register' %}" class="highlight-link">Register here</a></p>
                 </div>
-
-                <!-- Password -->
-                <div class="form-group">
-                    <label class="form-label" for="id_password">
-                        <i class="fas fa-lock"></i> Password
-                    </label>
-                    {{ form.password }}
-                    {% if form.password.errors %}
-                    <span class="form-error">{{ form.password.errors.0 }}</span>
-                    {% endif %}
-                </div>
-
-                <div class="form-options">
-                    <label class="checkbox-label">
-                        <input type="checkbox" name="remember_me">
-                        <span class="checkmark"></span>
-                        Remember me
-                    </label>
-                    <a href="{% url 'accounts:password_reset' %}" class="forgot-link">Forgot Password?</a>
-                </div>
-
-                {% if form.non_field_errors %}
-                <div class="form-errors-box">
-                    {% for error in form.non_field_errors %}
-                    <p class="form-error"><i class="fas fa-exclamation-circle"></i> {{ error }}</p>
-                    {% endfor %}
-                </div>
-                {% endif %}
-
-                <button type="submit" class="btn btn-primary btn-block" id="loginBtn">
-                    <i class="fas fa-sign-in-alt"></i> Login
-                </button>
-            </form>
-
-            <div class="auth-footer">
-                <p>Don't have an account? <a href="{% url 'accounts:register' %}">Register here</a></p>
             </div>
         </div>
     </div>
 </section>
+
+<script>
+function fillDemo(username, password) {
+    const userField = document.getElementById('id_username');
+    const passField = document.getElementById('id_password');
+    if (userField && passField) {
+        userField.value = username;
+        passField.value = password;
+        userField.classList.add('field-highlight');
+        passField.classList.add('field-highlight');
+        setTimeout(() => {
+            userField.classList.remove('field-highlight');
+            passField.classList.remove('field-highlight');
+        }, 1200);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('togglePasswordBtn');
+    const passInput = document.getElementById('id_password');
+    const toggleIcon = document.getElementById('togglePasswordIcon');
+    if (toggleBtn && passInput && toggleIcon) {
+        toggleBtn.addEventListener('click', function() {
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                toggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                passInput.type = 'password';
+                toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}EduPortal - Registration Portal{% endblock %}
+{% block title %}EduPortal - Smart Educational Portal & Management{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
@@ -13,15 +13,15 @@
     </div>
     <div class="hero-container">
         <div class="hero-content">
-            <span class="hero-badge">🎓 Welcome to EduPortal</span>
+            <span class="hero-badge"><i class="fas fa-sparkles"></i> Next-Gen Academic System</span>
             <h1 class="hero-title">
                 Your Gateway to
                 <span class="gradient-text">Smart Education</span>
                 Management
             </h1>
             <p class="hero-subtitle">
-                A modern platform for students, teachers, and administrators.
-                Register, manage, and track academic progress effortlessly.
+                A unified, secure, and modern platform for students, faculty, and administrators.
+                Register courses, analyze performance, and manage institution workflows seamlessly.
             </p>
             <div class="hero-cta">
                 {% if user.is_authenticated %}
@@ -33,57 +33,62 @@
                     </a>
                 {% else %}
                     <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg">
-                        <i class="fas fa-user-plus"></i> Get Started
+                        <i class="fas fa-user-plus"></i> Get Started Free
                     </a>
                     <a href="{% url 'accounts:login' %}" class="btn btn-outline btn-lg">
-                        <i class="fas fa-sign-in-alt"></i> Login
+                        <i class="fas fa-sign-in-alt"></i> Access Portal
                     </a>
                 {% endif %}
             </div>
             <div class="hero-stats">
                 <div class="stat-item">
                     <span class="stat-number" data-count="3">3</span>
-                    <span class="stat-label">Role Dashboards</span>
+                    <span class="stat-label">Dedicated Portals</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-number" data-count="100">100%</span>
-                    <span class="stat-label">Secure</span>
+                    <span class="stat-label">RBAC Security</span>
                 </div>
                 <div class="stat-item">
                     <span class="stat-number">⚡</span>
-                    <span class="stat-label">Fast & Modern</span>
+                    <span class="stat-label">Real-time Sync</span>
                 </div>
             </div>
         </div>
         <div class="hero-visual">
-            <div class="dashboard-preview">
-                <div class="preview-header">
+            <div class="hero-image-card glass-card">
+                <div class="hero-card-header">
                     <div class="preview-dots">
                         <span class="dot dot-red"></span>
                         <span class="dot dot-yellow"></span>
                         <span class="dot dot-green"></span>
                     </div>
-                    <span class="preview-title">Dashboard Preview</span>
+                    <span class="preview-title"><i class="fas fa-satellite-dish pulse-icon"></i> EduPortal Live Campus</span>
+                    <span class="preview-badge"><i class="fas fa-circle live-dot"></i> Online</span>
                 </div>
-                <div class="preview-body">
-                    <div class="preview-card pc-1">
-                        <i class="fas fa-users"></i>
-                        <span>Students</span>
-                    </div>
-                    <div class="preview-card pc-2">
-                        <i class="fas fa-chalkboard-teacher"></i>
-                        <span>Teachers</span>
-                    </div>
-                    <div class="preview-card pc-3">
+                <div class="hero-img-container" style="max-height: 330px; overflow: hidden;">
+                    <img src="{% static 'images/hero_campus.jpg' %}" alt="Students collaborating at EduPortal campus" class="hero-main-img" style="width: 100%; height: 310px; object-fit: cover; max-width: 100%; display: block;" loading="eager">
+                    <div class="hero-img-overlay"></div>
+                </div>
+
+                <!-- Floating Glass Widgets -->
+                <div class="floating-widget widget-top-left glass-card animate-float-slow">
+                    <div class="widget-icon icon-green">
                         <i class="fas fa-shield-alt"></i>
-                        <span>Admin</span>
                     </div>
-                    <div class="preview-chart">
-                        <div class="chart-bar" style="height: 60%"></div>
-                        <div class="chart-bar" style="height: 80%"></div>
-                        <div class="chart-bar" style="height: 45%"></div>
-                        <div class="chart-bar" style="height: 90%"></div>
-                        <div class="chart-bar" style="height: 70%"></div>
+                    <div class="widget-info">
+                        <span class="widget-title">Uptime & Security</span>
+                        <span class="widget-value">99.9% Verified</span>
+                    </div>
+                </div>
+
+                <div class="floating-widget widget-bottom-right glass-card animate-float-fast">
+                    <div class="widget-icon icon-purple">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <div class="widget-info">
+                        <span class="widget-title">Active Students</span>
+                        <span class="widget-value">1,500+ Registered</span>
                     </div>
                 </div>
             </div>
@@ -95,9 +100,9 @@
 <section class="features" id="features">
     <div class="section-container">
         <div class="section-header">
-            <span class="section-badge">Features</span>
-            <h2 class="section-title">Everything You Need</h2>
-            <p class="section-subtitle">Powerful tools for managing your educational institution</p>
+            <span class="section-badge">Platform Capabilities</span>
+            <h2 class="section-title">Engineered for Academic Excellence</h2>
+            <p class="section-subtitle">Comprehensive tools tailored for every stakeholder in the educational lifecycle</p>
         </div>
         <div class="features-grid">
             <div class="feature-card">
@@ -105,42 +110,90 @@
                     <i class="fas fa-user-graduate"></i>
                 </div>
                 <h3>Student Portal</h3>
-                <p>Students can view their academic details, update profiles, and track their progress through a personalized dashboard.</p>
+                <p>Students can view their academic records, enroll into accredited courses, track department progression, and manage credentials.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon icon-green">
                     <i class="fas fa-chalkboard-teacher"></i>
                 </div>
-                <h3>Teacher Portal</h3>
-                <p>Teachers can view student lists, manage academic records, and monitor department-wise statistics.</p>
+                <h3>Teacher Console</h3>
+                <p>Faculty can effortlessly browse student cohorts, filter by department or year, monitor performance statistics, and publish evaluations.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon icon-purple">
                     <i class="fas fa-user-shield"></i>
                 </div>
-                <h3>Admin Panel</h3>
-                <p>Full control over user management with the ability to activate, deactivate, and manage all accounts.</p>
+                <h3>Administrative Hub</h3>
+                <p>Complete authority over users, instant verification, one-click account deactivation/reactivation, and comprehensive security logging.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon icon-orange">
                     <i class="fas fa-lock"></i>
                 </div>
-                <h3>Secure Auth</h3>
-                <p>Role-based authentication with email verification, password reset, and encrypted sessions.</p>
+                <h3>Role-Based Security</h3>
+                <p>Multi-tier authentication with cryptographic session handling, CSRF protections, and granular role permissions.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon icon-pink">
                     <i class="fas fa-envelope-open-text"></i>
                 </div>
-                <h3>Email Verification</h3>
-                <p>Verify accounts via email activation links for enhanced security and trust.</p>
+                <h3>Email Activation</h3>
+                <p>Cryptographic tokens ensure only verified academic emails are admitted, preventing unauthorized access.</p>
             </div>
             <div class="feature-card">
                 <div class="feature-icon icon-teal">
                     <i class="fas fa-mobile-alt"></i>
                 </div>
-                <h3>Responsive Design</h3>
-                <p>Fully responsive interface that works beautifully on desktops, tablets, and mobile devices.</p>
+                <h3>Adaptive Experience</h3>
+                <p>Flawless user experience on all devices, featuring full light/dark theme toggles and lightning-fast navigation.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Campus & Digital Showcase Banner -->
+<section class="campus-showcase-section">
+    <div class="section-container">
+        <div class="showcase-card glass-card">
+            <div class="showcase-content">
+                <span class="showcase-badge"><i class="fas fa-university"></i> Modern Infrastructure</span>
+                <h2 class="showcase-title">Empowering Campuses with Connected Intelligence</h2>
+                <p class="showcase-text">
+                    EduPortal integrates classroom administration, student progression, and academic oversight into a streamlined digital hub. Designed with performance, accessibility, and high availability at its core.
+                </p>
+                <div class="showcase-features-list">
+                    <div class="showcase-feature-item">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <span>Zero Paperwork Enrollment</span>
+                    </div>
+                    <div class="showcase-feature-item">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <span>Automated Tokenized Password Resets</span>
+                    </div>
+                    <div class="showcase-feature-item">
+                        <i class="fas fa-check-circle text-success"></i>
+                        <span>Instant Faculty-Student Record Mapping</span>
+                    </div>
+                </div>
+                <div class="showcase-actions">
+                    {% if not user.is_authenticated %}
+                        <a href="{% url 'accounts:register' %}" class="btn btn-primary">Join Your Institution <i class="fas fa-arrow-right"></i></a>
+                    {% else %}
+                        <a href="{% url 'dashboard:redirect' %}" class="btn btn-primary">Open My Dashboard <i class="fas fa-arrow-right"></i></a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="showcase-visual">
+                <div class="showcase-img-wrapper">
+                    <img src="{% static 'images/hero_architecture.jpg' %}" alt="Modern Campus Architecture" class="showcase-img" loading="lazy">
+                    <div class="showcase-badge-overlay glass-card">
+                        <i class="fas fa-award text-gold"></i>
+                        <div>
+                            <strong>Accredited Standard</strong>
+                            <span>ISO 27001 Ready</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -150,53 +203,82 @@
 <section class="roles-section" id="roles">
     <div class="section-container">
         <div class="section-header">
-            <span class="section-badge">Roles</span>
-            <h2 class="section-title">Three Dashboards, One Platform</h2>
-            <p class="section-subtitle">Customized experience for every user role</p>
+            <span class="section-badge">Tailored Portals</span>
+            <h2 class="section-title">Three Roles, One Unified Platform</h2>
+            <p class="section-subtitle">Dedicated workstations designed specifically for each academic role</p>
         </div>
         <div class="roles-grid">
+            <!-- Student Card -->
             <div class="role-card role-student-card">
-                <div class="role-icon">
-                    <i class="fas fa-user-graduate"></i>
+                <div class="role-card-banner">
+                    <img src="{% static 'images/student_card.jpg' %}" alt="Student Portal" class="role-banner-img">
+                    <div class="role-banner-overlay"></div>
+                    <div class="role-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
                 </div>
-                <h3>Student</h3>
-                <ul>
-                    <li><i class="fas fa-check"></i> View academic details</li>
-                    <li><i class="fas fa-check"></i> Update profile info</li>
-                    <li><i class="fas fa-check"></i> Edit student details</li>
-                    <li><i class="fas fa-check"></i> Track progress</li>
-                </ul>
-                {% if not user.is_authenticated %}
-                <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-sm">Register as Student</a>
-                {% endif %}
+                <div class="role-card-body">
+                    <h3>Student</h3>
+                    <p class="role-desc">Track academic journey, view enrolled courses, update personal profile, and monitor progress.</p>
+                    <ul class="role-features-list">
+                        <li><i class="fas fa-check"></i> Course registration & catalog</li>
+                        <li><i class="fas fa-check"></i> Academic performance metrics</li>
+                        <li><i class="fas fa-check"></i> Profile & avatar customization</li>
+                        <li><i class="fas fa-check"></i> Departmental notices</li>
+                    </ul>
+                    {% if not user.is_authenticated %}
+                    <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-block">Register as Student</a>
+                    {% endif %}
+                </div>
             </div>
+
+            <!-- Teacher Card -->
             <div class="role-card role-teacher-card featured">
-                <div class="featured-badge">Most Used</div>
-                <div class="role-icon">
-                    <i class="fas fa-chalkboard-teacher"></i>
+                <div class="featured-badge">Faculty Portal</div>
+                <div class="role-card-banner">
+                    <img src="{% static 'images/teacher_card.jpg' %}" alt="Teacher Portal" class="role-banner-img">
+                    <div class="role-banner-overlay"></div>
+                    <div class="role-icon">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
                 </div>
-                <h3>Teacher</h3>
-                <ul>
-                    <li><i class="fas fa-check"></i> View student lists</li>
-                    <li><i class="fas fa-check"></i> Department statistics</li>
-                    <li><i class="fas fa-check"></i> Year-wise analytics</li>
-                    <li><i class="fas fa-check"></i> Manage records</li>
-                </ul>
-                {% if not user.is_authenticated %}
-                <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-sm">Register as Teacher</a>
-                {% endif %}
+                <div class="role-card-body">
+                    <h3>Teacher</h3>
+                    <p class="role-desc">Oversee departmental students, monitor year-wise cohorts, and manage educational progress.</p>
+                    <ul class="role-features-list">
+                        <li><i class="fas fa-check"></i> Cohort roster & student search</li>
+                        <li><i class="fas fa-check"></i> Department performance analytics</li>
+                        <li><i class="fas fa-check"></i> Semester & year filters</li>
+                        <li><i class="fas fa-check"></i> Direct academic verification</li>
+                    </ul>
+                    {% if not user.is_authenticated %}
+                    <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-block">Faculty Login</a>
+                    {% endif %}
+                </div>
             </div>
+
+            <!-- Admin Card -->
             <div class="role-card role-admin-card">
-                <div class="role-icon">
-                    <i class="fas fa-user-shield"></i>
+                <div class="role-card-banner">
+                    <img src="{% static 'images/admin_card.jpg' %}" alt="Admin Portal" class="role-banner-img">
+                    <div class="role-banner-overlay"></div>
+                    <div class="role-icon">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
                 </div>
-                <h3>Admin</h3>
-                <ul>
-                    <li><i class="fas fa-check"></i> Manage all users</li>
-                    <li><i class="fas fa-check"></i> Activate/deactivate accounts</li>
-                    <li><i class="fas fa-check"></i> System statistics</li>
-                    <li><i class="fas fa-check"></i> Full access control</li>
-                </ul>
+                <div class="role-card-body">
+                    <h3>Administrator</h3>
+                    <p class="role-desc">Institutional control panel for role assignment, system diagnostics, and account management.</p>
+                    <ul class="role-features-list">
+                        <li><i class="fas fa-check"></i> Universal user directory</li>
+                        <li><i class="fas fa-check"></i> Instant activation / suspension</li>
+                        <li><i class="fas fa-check"></i> Create faculty & student accounts</li>
+                        <li><i class="fas fa-check"></i> Complete audit & security control</li>
+                    </ul>
+                    {% if not user.is_authenticated %}
+                    <a href="{% url 'accounts:login' %}" class="btn btn-outline btn-block">Admin Access</a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
