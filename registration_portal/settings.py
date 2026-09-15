@@ -198,6 +198,7 @@ SECURE_BROWSER_XSS_FILTER = True
 
 # Production-only security (when DEBUG=False)
 if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_SSL_REDIRECT = True
